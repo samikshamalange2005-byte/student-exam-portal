@@ -3,6 +3,7 @@ const router = express.Router();
 const Room = require('../models/Room');
 const Exam = require('../models/Exam');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const { broadcastEvent } = require('../utils/sse');
 
 // GET /api/rooms - List all rooms
 router.get('/', verifyToken, async (req, res) => {
@@ -46,6 +47,11 @@ router.post('/', verifyToken, requireRole('admin'), async (req, res) => {
 
     await room.save();
 
+    broadcastEvent('room_updated', {
+      action: 'created',
+      room
+    });
+
     return res.status(201).json({
       success: true,
       message: `Room "${room.name}" with capacity ${room.capacity} created successfully.`,
@@ -77,6 +83,12 @@ router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
     }
 
     await Room.findByIdAndDelete(req.params.id);
+
+    broadcastEvent('room_updated', {
+      action: 'deleted',
+      roomId: req.params.id,
+      roomName: room.name
+    });
 
     return res.json({
       success: true,

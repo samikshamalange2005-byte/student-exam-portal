@@ -344,6 +344,107 @@
     </div>
   </main>
 
+  <!-- Edit Exam Schedule Modal -->
+  <div id="editExamModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">✏️</span>
+          <h3 style="margin: 0; font-size: 1.25rem;">Edit Examination Schedule</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+
+      <form id="editExamForm">
+        <input type="hidden" id="editExamId">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editSubjectName">Subject Name <span style="color: var(--danger)">*</span></label>
+            <input type="text" id="editSubjectName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editSubjectCode">Subject Code <span style="color: var(--danger)">*</span></label>
+            <input type="text" id="editSubjectCode" class="form-control" required style="text-transform: uppercase;">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editDepartment">Department / Branch <span style="color: var(--danger)">*</span></label>
+            <select id="editDepartment" class="form-control" required>
+              <option value="Computer Science">Computer Science & Engineering</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Electronics & Communication">Electronics & Communication</option>
+              <option value="Mechanical Engineering">Mechanical Engineering</option>
+              <option value="Civil Engineering">Civil Engineering</option>
+              <option value="Electrical Engineering">Electrical Engineering</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editExamDate">Exam Date <span style="color: var(--danger)">*</span></label>
+            <input type="date" id="editExamDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editStartTime">Start Time <span style="color: var(--danger)">*</span></label>
+            <input type="text" id="editStartTime" class="form-control" required placeholder="e.g. 10:00 AM">
+          </div>
+          <div class="form-group">
+            <label for="editEndTime">End Time <span style="color: var(--danger)">*</span></label>
+            <input type="text" id="editEndTime" class="form-control" required placeholder="e.g. 01:00 PM">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editYear">Target Academic Year <span style="color: var(--danger)">*</span></label>
+            <select id="editYear" class="form-control" required>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editSection">Target Class Section <span style="color: var(--danger)">*</span></label>
+            <select id="editSection" class="form-control" required>
+              <option value="All">All Sections (A, B, C)</option>
+              <option value="A">Section A Only</option>
+              <option value="B">Section B Only</option>
+              <option value="C">Section C Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editRoomSelect">Assign Room / Hall <span style="color: var(--danger)">*</span></label>
+            <select id="editRoomSelect" class="form-control" required onchange="checkEditCapacityMeter()">
+              <option value="">-- Select an Exam Room --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editStudentCount">Students Assigned <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="editStudentCount" class="form-control" min="1" required oninput="checkEditCapacityMeter()">
+          </div>
+        </div>
+
+        <!-- Dynamic Capacity Indicator -->
+        <div id="editCapacityFeedback" class="capacity-meter-pill meter-ok" style="margin-bottom: 1.25rem;">
+          <span>ℹ️</span> Seating capacity status
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="editExamSubmitBtn">💾 Save & Sync Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer>
     <p>&copy; 2026 Apex College Examination Cell. All rights reserved.</p>
   </footer>

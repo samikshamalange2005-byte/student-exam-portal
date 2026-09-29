@@ -181,7 +181,13 @@ router.post('/', verifyToken, requireRole('admin'), async (req, res) => {
       section: newExam.section,
       room: newExam.room,
       roomCapacity: newExam.roomCapacity,
-      studentCount: newExam.studentCount
+      studentCount: newExam.studentCount,
+      action: 'created'
+    });
+
+    broadcastEvent('timetable_sync', {
+      action: 'created',
+      exam: newExam
     });
 
     return res.status(201).json({
@@ -192,6 +198,129 @@ router.post('/', verifyToken, requireRole('admin'), async (req, res) => {
   } catch (error) {
     console.error('Error creating exam:', error);
     return res.status(500).json({ message: 'Error creating exam schedule.', error: error.message });
+  }
+});
+
+// PUT /api/exams/:id (Admin only) - Edit & reschedule exam
+router.put('/:id', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const existingExam = await Exam.findById(req.params.id);
+    if (!existingExam) {
+      return res.status(404).json({ message: 'Exam timetable record not found.' });
+    }
+
+    const {
+      subjectName,
+      subjectCode,
+      examDate,
+      startTime,
+      endTime,
+      department,
+      year,
+      section,
+      room,
+      roomId,
+      studentCount
+    } = req.body;
+
+    if (!subjectName || !subjectCode || !examDate || !startTime || !endTime || !year || !section) {
+      return res.status(400).json({
+        message: 'Please provide all required fields: Subject Name, Subject Code, Date, Start Time, End Time, Year, and Section.'
+      });
+    }
+
+    // 1. Resolve Target Room
+    let targetRoom = null;
+    if (roomId) {
+      targetRoom = await Room.findById(roomId);
+    }
+    if (!targetRoom && room) {
+      targetRoom = await Room.findOne({ name: { $regex: new RegExp(`^${room.trim()}$`, 'i') } });
+    }
+    if (!targetRoom) {
+      const roomName = (room || existingExam.room || 'Main Examination Hall').trim();
+      targetRoom = await Room.findOne({ name: roomName });
+      if (!targetRoom) {
+        targetRoom = await Room.create({ name: roomName, capacity: 60 });
+      }
+    }
+
+    // 2. Validate Student Count vs Room Capacity
+    let assignedStudents = parseInt(studentCount, 10);
+    if (isNaN(assignedStudents) || assignedStudents <= 0) {
+      assignedStudents = existingExam.studentCount || 30;
+    }
+
+    if (assignedStudents > targetRoom.capacity) {
+      return res.status(400).json({
+        message: `Room capacity exceeded! Room "${targetRoom.name}" has a seating capacity of ${targetRoom.capacity}, but ${assignedStudents} students are assigned for ${year} - Section ${section}.`
+      });
+    }
+
+    // 3. Validate Room Booking Overlaps (excluding this exam)
+    const clashingExams = await Exam.find({
+      _id: { $ne: req.params.id },
+      examDate: examDate,
+      $or: [
+        { roomId: targetRoom._id },
+        { room: targetRoom.name }
+      ]
+    });
+
+    for (const existing of clashingExams) {
+      if (doTimesOverlap(startTime, endTime, existing.startTime, existing.endTime)) {
+        return res.status(400).json({
+          message: `Booking Conflict! Room "${targetRoom.name}" is already assigned to "${existing.subjectName}" (${existing.year} - Section ${existing.section}) on ${examDate} from ${existing.startTime} to ${existing.endTime}. Please select another room or time.`
+        });
+      }
+    }
+
+    // 4. Update the exam
+    existingExam.subjectName = subjectName.trim();
+    existingExam.subjectCode = subjectCode.trim().toUpperCase();
+    existingExam.examDate = examDate;
+    existingExam.startTime = startTime.trim();
+    existingExam.endTime = endTime.trim();
+    existingExam.department = (department || 'Computer Science').trim();
+    existingExam.year = year.trim();
+    existingExam.section = section.trim();
+    existingExam.room = targetRoom.name;
+    existingExam.roomId = targetRoom._id;
+    existingExam.roomCapacity = targetRoom.capacity;
+    existingExam.studentCount = assignedStudents;
+
+    await existingExam.save();
+
+    // Broadcast real-time update event
+    broadcastEvent('exam_updated', {
+      _id: existingExam._id,
+      subjectName: existingExam.subjectName,
+      subjectCode: existingExam.subjectCode,
+      examDate: existingExam.examDate,
+      startTime: existingExam.startTime,
+      endTime: existingExam.endTime,
+      department: existingExam.department,
+      year: existingExam.year,
+      section: existingExam.section,
+      room: existingExam.room,
+      roomCapacity: existingExam.roomCapacity,
+      studentCount: existingExam.studentCount,
+      action: 'updated'
+    });
+
+    broadcastEvent('timetable_sync', {
+      action: 'updated',
+      exam: existingExam
+    });
+
+    return res.json({
+      success: true,
+      message: `Exam "${existingExam.subjectName}" updated successfully in ${targetRoom.name}.`,
+      exam: existingExam
+    });
+  } catch (error) {
+    console.error('Error updating exam:', error);
+    return res.status(500).json({ message: 'Error updating exam schedule.', error: error.message });
   }
 });
 
@@ -210,7 +339,15 @@ router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
       _id: req.params.id,
       subjectName: exam.subjectName,
       year: exam.year,
-      section: exam.section
+      section: exam.section,
+      department: exam.department,
+      action: 'deleted'
+    });
+
+    broadcastEvent('timetable_sync', {
+      action: 'deleted',
+      examId: req.params.id,
+      subjectName: exam.subjectName
     });
 
     return res.json({

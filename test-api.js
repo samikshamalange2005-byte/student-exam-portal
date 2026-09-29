@@ -178,12 +178,17 @@ async function runTests() {
   const listA = examsForA.data.exams;
   console.log(`Student A received ${listA.length} exams:`, listA.map(e => `${e.subjectCode} (${e.year} Sec ${e.section})`));
 
-  const hasExam1 = listA.some(e => e.subjectCode === 'CS201');
-  const hasExam3 = listA.some(e => e.subjectCode === 'MA201');
-  const hasExam2 = listA.some(e => e.subjectCode === 'CS301');
+  const exam1Id = exam1.data.exam._id;
+  const exam2Id = exam2.data.exam._id;
+  const exam3Id = exam3.data.exam._id;
 
-  if (!hasExam1 || !hasExam3 || hasExam2) {
-    throw new Error('Filtering failed for Student A: Expected CS201 and MA201, did not expect CS301.');
+  const hasExam1 = listA.some(e => e._id === exam1Id);
+  const hasExam3 = listA.some(e => e._id === exam3Id);
+  const hasExam2 = listA.some(e => e._id === exam2Id);
+  const allAre2ndYear = listA.every(e => e.year === '2nd Year');
+
+  if (!hasExam1 || !hasExam3 || hasExam2 || !allAre2ndYear) {
+    throw new Error('Filtering failed for Student A: Expected Exam 1 & 3 (2nd Year), must not contain Exam 2 (3rd Year).');
   }
   console.log('✓ Student A correctly received ONLY their 2nd Year (Section A & All) exams!\n');
 
@@ -195,12 +200,13 @@ async function runTests() {
   const listB = examsForB.data.exams;
   console.log(`Student B received ${listB.length} exams:`, listB.map(e => `${e.subjectCode} (${e.year} Sec ${e.section})`));
 
-  const bHasExam2 = listB.some(e => e.subjectCode === 'CS301');
-  const bHasExam1 = listB.some(e => e.subjectCode === 'CS201');
-  const bHasExam3 = listB.some(e => e.subjectCode === 'MA201');
+  const bHasExam2 = listB.some(e => e._id === exam2Id);
+  const bHasExam1 = listB.some(e => e._id === exam1Id);
+  const bHasExam3 = listB.some(e => e._id === exam3Id);
+  const allAre3rdYear = listB.every(e => e.year === '3rd Year');
 
-  if (!bHasExam2 || bHasExam1 || bHasExam3) {
-    throw new Error('Filtering failed for Student B: Expected CS301, did not expect CS201 or MA201.');
+  if (!bHasExam2 || bHasExam1 || bHasExam3 || !allAre3rdYear) {
+    throw new Error('Filtering failed for Student B: Expected Exam 2 (3rd Year), must not contain Exam 1 or 3 (2nd Year).');
   }
   console.log('✓ Student B correctly received ONLY their 3rd Year (Section B) exam!\n');
 

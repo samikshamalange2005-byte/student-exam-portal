@@ -26,13 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupAdminLiveEvents() {
   try {
     const evt = new EventSource('/api/events');
-    evt.addEventListener('exam_created', () => {
+    const refreshAll = () => {
       loadStats();
       loadExams();
-    });
-    evt.addEventListener('exam_deleted', () => {
+    };
+    evt.addEventListener('exam_created', refreshAll);
+    evt.addEventListener('exam_updated', refreshAll);
+    evt.addEventListener('exam_deleted', refreshAll);
+    evt.addEventListener('timetable_sync', refreshAll);
+    evt.addEventListener('room_updated', () => {
+      loadRooms();
       loadStats();
-      loadExams();
     });
   } catch (e) {
     // Ignore fallback
@@ -180,16 +184,27 @@ async function loadRooms() {
       `).join('');
     }
 
-    // Populate room select dropdown
-    const previousSelection = roomSelect.value;
-    roomSelect.innerHTML = '<option value="">-- Select an Exam Room --</option>' + 
+    // Populate room select dropdowns
+    const roomOptionsHtml = '<option value="">-- Select an Exam Room --</option>' + 
       allRooms.map(r => `<option value="${r._id}" data-capacity="${r.capacity}" data-name="${r.name}">${r.name} (Max: ${r.capacity} seats)</option>`).join('');
 
-    if (previousSelection) {
-      roomSelect.value = previousSelection;
+    const previousSelection = roomSelect ? roomSelect.value : '';
+    if (roomSelect) {
+      roomSelect.innerHTML = roomOptionsHtml;
+      if (previousSelection) {
+        roomSelect.value = previousSelection;
+      }
+      checkCapacityMeter();
     }
 
-    checkCapacityMeter();
+    const editRoomSelect = document.getElementById('editRoomSelect');
+    if (editRoomSelect) {
+      const prevEdit = editRoomSelect.value;
+      editRoomSelect.innerHTML = roomOptionsHtml;
+      if (prevEdit) {
+        editRoomSelect.value = prevEdit;
+      }
+    }
 
   } catch (err) {
     console.error('Error loading rooms:', err);
@@ -378,7 +393,10 @@ function renderExams(exams) {
             </div>
           </div>
         </td>
-        <td style="text-align: right;">
+        <td style="text-align: right; white-space: nowrap;">
+          <button class="btn btn-secondary btn-sm" style="margin-right: 0.35rem;" onclick="openEditModal('${exam._id}')">
+            ✏️ Edit
+          </button>
           <button class="btn btn-danger btn-sm" onclick="deleteExam('${exam._id}', '${exam.subjectName}')">
             🗑️ Delete
           </button>
@@ -485,3 +503,162 @@ document.getElementById('createExamForm').addEventListener('submit', async (e) =
     submitBtn.innerText = '✨ Publish Exam Schedule';
   }
 });
+
+// Open Edit Modal with exam data pre-filled
+function openEditModal(examId) {
+  const exam = allExams.find(e => e._id === examId);
+  if (!exam) {
+    showAlert('Exam record not found.', 'danger');
+    return;
+  }
+
+  document.getElementById('editExamId').value = exam._id;
+  document.getElementById('editSubjectName').value = exam.subjectName || '';
+  document.getElementById('editSubjectCode').value = exam.subjectCode || '';
+  document.getElementById('editDepartment').value = exam.department || 'Computer Science';
+  document.getElementById('editExamDate').value = exam.examDate || '';
+  document.getElementById('editStartTime').value = exam.startTime || '';
+  document.getElementById('editEndTime').value = exam.endTime || '';
+  document.getElementById('editYear').value = exam.year || '1st Year';
+  document.getElementById('editSection').value = exam.section || 'A';
+  document.getElementById('editStudentCount').value = exam.studentCount || 30;
+
+  // Set selected room
+  const editRoomSelect = document.getElementById('editRoomSelect');
+  if (editRoomSelect) {
+    let found = false;
+    for (let opt of editRoomSelect.options) {
+      if (opt.value === exam.roomId || opt.getAttribute('data-name') === exam.room) {
+        editRoomSelect.value = opt.value;
+        found = true;
+        break;
+      }
+    }
+    if (!found && editRoomSelect.options.length > 1) {
+      editRoomSelect.selectedIndex = 1;
+    }
+  }
+
+  checkEditCapacityMeter();
+
+  const modal = document.getElementById('editExamModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editExamModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Capacity meter in Edit Modal
+function checkEditCapacityMeter() {
+  const roomSelect = document.getElementById('editRoomSelect');
+  const studentCountInput = document.getElementById('editStudentCount');
+  const feedbackEl = document.getElementById('editCapacityFeedback');
+
+  if (!roomSelect || !studentCountInput || !feedbackEl) return;
+
+  const selectedOpt = roomSelect.options[roomSelect.selectedIndex];
+  if (!roomSelect.value || !selectedOpt) {
+    feedbackEl.className = 'capacity-meter-pill meter-ok';
+    feedbackEl.innerHTML = '<span>ℹ️</span> Select an examination room above to check seating limits.';
+    return;
+  }
+
+  const capacity = parseInt(selectedOpt.getAttribute('data-capacity'), 10) || 0;
+  const count = parseInt(studentCountInput.value, 10) || 0;
+
+  if (count <= 0) {
+    feedbackEl.className = 'capacity-meter-pill meter-warn';
+    feedbackEl.innerHTML = '<span>⚠️</span> Please specify the number of students assigned.';
+    return;
+  }
+
+  const percentage = Math.round((count / capacity) * 100);
+
+  if (count > capacity) {
+    feedbackEl.className = 'capacity-meter-pill meter-danger';
+    feedbackEl.innerHTML = `<span>❌</span> <strong>Capacity Exceeded!</strong> ${count} students will not fit in this room (${capacity} max seats).`;
+  } else if (count === capacity) {
+    feedbackEl.className = 'capacity-meter-pill meter-warn';
+    feedbackEl.innerHTML = `<span>⚠️</span> <strong>Room at 100% capacity:</strong> ${count} / ${capacity} seats assigned.`;
+  } else {
+    feedbackEl.className = 'capacity-meter-pill meter-ok';
+    feedbackEl.innerHTML = `<span>✅</span> <strong>Capacity Valid:</strong> ${count} / ${capacity} seats assigned (${percentage}% full).`;
+  }
+}
+
+// Handle Edit Form Submission (PUT /api/exams/:id)
+const editForm = document.getElementById('editExamForm');
+if (editForm) {
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const examId = document.getElementById('editExamId').value;
+    const submitBtn = document.getElementById('editExamSubmitBtn');
+    const roomSelect = document.getElementById('editRoomSelect');
+    const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+
+    if (!roomSelect.value) {
+      alert('Please select an Exam Room from the list.');
+      return;
+    }
+
+    const roomId = roomSelect.value;
+    const roomName = selectedOption.getAttribute('data-name');
+    const roomCapacity = parseInt(selectedOption.getAttribute('data-capacity'), 10);
+    const studentCount = parseInt(document.getElementById('editStudentCount').value, 10);
+
+    if (studentCount > roomCapacity) {
+      alert(`Room capacity exceeded! Selected room "${roomName}" only has ${roomCapacity} seats, but you entered ${studentCount} students.`);
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Saving Changes...';
+
+    const payload = {
+      subjectName: document.getElementById('editSubjectName').value.trim(),
+      subjectCode: document.getElementById('editSubjectCode').value.trim(),
+      examDate: document.getElementById('editExamDate').value,
+      startTime: document.getElementById('editStartTime').value.trim(),
+      endTime: document.getElementById('editEndTime').value.trim(),
+      year: document.getElementById('editYear').value,
+      section: document.getElementById('editSection').value,
+      department: document.getElementById('editDepartment').value,
+      roomId: roomId,
+      room: roomName,
+      roomCapacity: roomCapacity,
+      studentCount: studentCount
+    };
+
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`/api/exams/${examId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update exam');
+
+      closeEditModal();
+      showAlert(`Exam "${data.exam.subjectName}" updated and synchronized across student portal!`, 'success');
+      loadExams();
+      loadStats();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '💾 Save & Sync Changes';
+    }
+  });
+}

@@ -56,49 +56,109 @@ function showToast(title, message, icon = '🔔') {
   }, 7000);
 }
 
+// Helper to check whether an exam event is relevant to the student's enrolled profile or active view
+function isExamRelevant(exam) {
+  if (!exam || !currentUser) return { enrolledMatch: false, filterMatch: false };
+
+  // 1. Matches student's enrolled academic profile
+  const enrolledYear = exam.year === currentUser.year;
+  const enrolledSec = exam.section === currentUser.section || exam.section === 'All';
+  const enrolledDept = !exam.department || !currentUser.department || exam.department === currentUser.department;
+  const enrolledMatch = enrolledYear && enrolledSec && enrolledDept;
+
+  // 2. Matches current dropdown filter selections on screen
+  const curDept = document.getElementById('studentFilterDept') ? document.getElementById('studentFilterDept').value : '';
+  const curYear = document.getElementById('studentFilterYear') ? document.getElementById('studentFilterYear').value : '';
+  const curSec = document.getElementById('studentFilterSection') ? document.getElementById('studentFilterSection').value : '';
+
+  const filterYearMatch = !curYear || curYear === exam.year;
+  const filterSecMatch = !curSec || curSec === 'All' || curSec === exam.section || exam.section === 'All';
+  const filterDeptMatch = !curDept || curDept === 'All Departments' || curDept === exam.department;
+  const filterMatch = filterYearMatch && filterSecMatch && filterDeptMatch;
+
+  return { enrolledMatch, filterMatch };
+}
+
 // Connect to Server-Sent Events (SSE) for instant live updates
 function setupLiveEventSource() {
   try {
     const evtSource = new EventSource('/api/events');
 
+    evtSource.onopen = () => {
+      const statusEl = document.getElementById('liveSyncStatus');
+      if (statusEl) {
+        statusEl.innerHTML = '<span class="pulse-dot"></span> Live Sync Active';
+        statusEl.style.color = '#10b981';
+      }
+      loadMyExams();
+    };
+
+    // When an Admin schedules a new exam
     evtSource.addEventListener('exam_created', (e) => {
       try {
         const exam = JSON.parse(e.data);
         if (!currentUser) return;
 
-        // Check if the newly published exam matches this student's class
-        const matchesYear = exam.year === currentUser.year;
-        const matchesSection = exam.section === currentUser.section || exam.section === 'All';
+        const { enrolledMatch, filterMatch } = isExamRelevant(exam);
 
-        if (matchesYear && matchesSection) {
+        if (enrolledMatch || filterMatch) {
           playNotificationChime();
+          const title = enrolledMatch ? '🎉 New Exam for Your Class!' : 'ℹ️ Timetable Updated';
           showToast(
-            'New Exam Published!',
-            `${exam.subjectName} (${exam.subjectCode}) on ${exam.examDate} in ${exam.room}.`,
-            '🎉'
+            title,
+            `${exam.subjectName} (${exam.subjectCode}) on ${formatDate(exam.examDate)} in ${exam.room} (${exam.startTime} – ${exam.endTime}).`,
+            '🔔'
           );
-          // Reload timetable and highlight the new exam card
-          loadMyExams(exam._id);
+          loadMyExams(exam._id, 'new');
+        } else {
+          loadMyExams();
         }
       } catch (err) {
         console.error('Error handling exam_created event:', err);
       }
     });
 
+    // When an Admin modifies or reschedules an exam (Room / Time / Date)
+    evtSource.addEventListener('exam_updated', (e) => {
+      try {
+        const exam = JSON.parse(e.data);
+        if (!currentUser) return;
+
+        const { enrolledMatch, filterMatch } = isExamRelevant(exam);
+
+        if (enrolledMatch || filterMatch) {
+          playNotificationChime();
+          const title = enrolledMatch ? '✏️ Exam Rescheduled / Updated!' : '🔄 Exam Details Updated';
+          showToast(
+            title,
+            `"${exam.subjectName}" updated: ${formatDate(exam.examDate)} (${exam.startTime} – ${exam.endTime}) in Room ${exam.room}.`,
+            '✏️'
+          );
+          loadMyExams(exam._id, 'updated');
+        } else {
+          loadMyExams();
+        }
+      } catch (err) {
+        console.error('Error handling exam_updated event:', err);
+      }
+    });
+
+    // When an Admin deletes an exam
     evtSource.addEventListener('exam_deleted', (e) => {
       try {
         const data = JSON.parse(e.data);
         if (!currentUser) return;
 
-        const matchesYear = data.year === currentUser.year;
-        const matchesSection = data.section === currentUser.section || data.section === 'All';
+        const { enrolledMatch, filterMatch } = isExamRelevant(data);
 
-        if (matchesYear && matchesSection) {
+        if (enrolledMatch || filterMatch) {
           showToast(
-            'Exam Schedule Updated',
-            `"${data.subjectName}" was removed from your timetable.`,
-            'ℹ️'
+            'Exam Removed from Schedule',
+            `"${data.subjectName}" was removed from the examination timetable.`,
+            '🗑️'
           );
+          loadMyExams();
+        } else {
           loadMyExams();
         }
       } catch (err) {
@@ -106,9 +166,25 @@ function setupLiveEventSource() {
       }
     });
 
+    // General sync broadcast
+    evtSource.addEventListener('timetable_sync', () => {
+      loadMyExams();
+    });
+
+    evtSource.addEventListener('room_updated', () => {
+      loadMyExams();
+    });
+
     evtSource.onerror = () => {
-      // Reconnects automatically by browser
+      const statusEl = document.getElementById('liveSyncStatus');
+      if (statusEl) {
+        statusEl.innerHTML = '<span class="pulse-dot" style="background:#f59e0b; box-shadow:0 0 0 rgba(245,158,11,0.4);"></span> Connecting...';
+        statusEl.style.color = '#f59e0b';
+      }
     };
+
+    // Fail-safe periodic refresh every 30 seconds
+    setInterval(loadMyExams, 30000);
   } catch (err) {
     console.warn('Real-time events unavailable, falling back to periodic refresh:', err);
     setInterval(loadMyExams, 15000);
@@ -235,7 +311,7 @@ function renderSpotlightCard(upcomingExam) {
   spotlightSection.style.display = 'block';
 }
 
-async function loadMyExams(highlightId = null) {
+async function loadMyExams(highlightId = null, highlightType = 'new') {
   const container = document.getElementById('studentTimetableContainer');
   const totalCountEl = document.getElementById('statStudentTotal');
   const badgeCountEl = document.getElementById('timetableCountBadge');
@@ -302,10 +378,12 @@ async function loadMyExams(highlightId = null) {
         statusBadge = `<span class="badge badge-blue">In ${diffDays} days</span>`;
       }
 
-      const isNewHighlight = highlightId && exam._id === highlightId ? 'highlight-new' : '';
+      const isHighlight = highlightId && exam._id === highlightId 
+        ? (highlightType === 'updated' ? 'highlight-updated' : 'highlight-new') 
+        : '';
 
       return `
-        <div class="exam-card ${isNewHighlight}" id="exam_${exam._id}">
+        <div class="exam-card ${isHighlight}" id="exam_${exam._id}">
           <div class="exam-card-header">
             <span class="subject-code-badge">${exam.subjectCode}</span>
             ${statusBadge}

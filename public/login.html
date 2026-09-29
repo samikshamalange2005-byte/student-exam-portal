@@ -3,84 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - College Exam Timetable Portal</title>
+  <title>Login - Apex College Examination Portal</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- Navigation Bar -->
   <header class="navbar">
     <a href="/" class="brand">
       <div class="brand-icon">🎓</div>
-      <span>Apex College Exams</span>
+      <span>Apex Examination Portal</span>
     </a>
     <div class="nav-links">
       <a href="/" class="btn btn-secondary btn-sm">Home</a>
-      <a href="/register.html" class="btn btn-primary btn-sm">Register</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">New Registration</a>
     </div>
   </header>
 
-  <!-- Login Form Container -->
-  <main class="container">
-    <div class="auth-wrapper">
-      <div class="auth-card">
-        <div class="auth-header">
-          <h1 id="loginTitle">Student Login</h1>
-          <p id="loginSubtitle">Sign in to view your class exam timetable</p>
+  <!-- Main Login Showcase Container -->
+  <main class="container" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 160px); padding: 1.5rem 1rem;">
+    <div class="auth-split-wrapper">
+      
+      <!-- Left Pane: Visual Showcase & Brand Highlights -->
+      <div class="auth-showcase-pane">
+        <div>
+          <div class="auth-showcase-badge">
+            <span class="pulse-dot"></span> Next-Gen Examination System
+          </div>
+          
+          <h1 class="auth-showcase-title">
+            Smart Examination & <span>Seating Control</span>
+          </h1>
+          
+          <p class="auth-showcase-desc">
+            Seamless exam scheduling, automated room capacity checks, and instant real-time synchronization between Admin Exam Cell and Students.
+          </p>
+
+          <div class="auth-feature-list">
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">⚡</div>
+              <div class="auth-feature-text">
+                <strong>Real-Time Live Updates</strong>
+                <p>Timetable changes and room reallocations stream live to student dashboards without page reloads.</p>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">🏛️</div>
+              <div class="auth-feature-text">
+                <strong>Clash-Free Hall Allocation</strong>
+                <p>Guaranteed zero room overlaps and strict room seating capacity enforcement.</p>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">🎯</div>
+              <div class="auth-feature-text">
+                <strong>Class & Branch Filtering</strong>
+                <p>Personalized schedules filtered by Branch, Academic Year, and Section with print-ready admit slips.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-showcase-footer">
+          <span>🔒 256-Bit JWT Session Security</span>
+          <span>Apex University v2.4</span>
+        </div>
+      </div>
+
+      <!-- Right Pane: Interactive Login Form -->
+      <div class="auth-form-pane">
+        <div class="auth-form-header">
+          <h2 id="loginTitle">Student Portal Login</h2>
+          <p id="loginSubtitle">Sign in to view your class exam timetable & admit slip</p>
         </div>
 
         <!-- Role Switcher Tabs -->
         <div class="role-tabs">
           <button type="button" class="role-tab active" id="tabStudent" onclick="switchRole('student')">
-            🎒 Student
+            🎒 Student Portal
           </button>
           <button type="button" class="role-tab" id="tabAdmin" onclick="switchRole('admin')">
-            🏛️ Admin
+            🏛️ Exam Cell Admin
           </button>
         </div>
 
-        <!-- Feedback Alert -->
+        <!-- Quick Demo 1-Click Login Chips -->
+        <div class="demo-quick-section">
+          <div class="demo-quick-label">
+            <span>⚡</span> Quick Demo 1-Click Login:
+          </div>
+          <div class="demo-chips-grid">
+            <button type="button" class="demo-chip" onclick="fillDemo('student', 'alice@college.edu', 'student123')">
+              👤 Alice (2nd Yr CS)
+            </button>
+            <button type="button" class="demo-chip" onclick="fillDemo('student', 'bob@college.edu', 'student123')">
+              👤 Bob (3rd Yr CS)
+            </button>
+            <button type="button" class="demo-chip" onclick="fillDemo('admin', 'admin@college.edu', 'admin123')">
+              👑 Exam Cell Admin
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback Alert Box -->
         <div id="alertBox" class="alert" style="display: none;"></div>
 
         <!-- Login Form -->
         <form id="loginForm">
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <input 
-              type="email" 
-              id="email" 
-              class="form-control" 
-              placeholder="e.g. yourname@college.edu" 
-              required
-            >
+            <label for="email" style="font-weight: 600; font-size: 0.875rem; color: var(--slate-800);">Email Address</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon-prefix">✉️</span>
+              <input 
+                type="email" 
+                id="email" 
+                class="form-control input-with-icon" 
+                placeholder="name@college.edu" 
+                required
+                autocomplete="email"
+              >
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
-            <input 
-              type="password" 
-              id="password" 
-              class="form-control" 
-              placeholder="••••••••" 
-              required
-            >
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label for="password" style="font-weight: 600; font-size: 0.875rem; color: var(--slate-800); margin-bottom: 0;">Password</label>
+              <a href="javascript:void(0)" onclick="alert('Demo passwords: student123 for students, admin123 for admin.')" style="font-size: 0.8rem; color: var(--primary);">Forgot?</a>
+            </div>
+            <div class="input-icon-wrapper">
+              <span class="input-icon-prefix">🔒</span>
+              <input 
+                type="password" 
+                id="password" 
+                class="form-control input-with-icon" 
+                placeholder="••••••••" 
+                required
+                autocomplete="current-password"
+                style="padding-right: 2.75rem;"
+              >
+              <button type="button" class="password-toggle-btn" id="togglePasswordBtn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+                👁️
+              </button>
+            </div>
           </div>
 
-          <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-            Sign In
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+            <label style="display: flex; align-items: center; gap: 0.45rem; cursor: pointer; user-select: none;">
+              <input type="checkbox" id="rememberMe" checked style="accent-color: var(--primary); width: 15px; height: 15px;">
+              <span>Keep me signed in</span>
+            </label>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);">
+            <span>Sign In to Dashboard</span>
+            <span>→</span>
           </button>
         </form>
 
-        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
-          Don't have an account yet? 
-          <a href="/register.html" id="registerLink" style="font-weight: 600;">Register here</a>
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.25rem;">
+          Don't have an active account yet? 
+          <a href="/register.html" id="registerLink" style="font-weight: 700; color: var(--primary); margin-left: 0.25rem;">Create Account</a>
         </div>
       </div>
+
     </div>
   </main>
 
+  <!-- Footer -->
   <footer>
-    <p>&copy; 2026 Apex College of Engineering & Technology.</p>
+    <p>&copy; 2026 Apex College Examination Cell. All rights reserved.</p>
   </footer>
 
   <script src="/js/auth.js"></script>
@@ -98,17 +191,44 @@
       if (role === 'admin') {
         tabAdmin.classList.add('active');
         tabStudent.classList.remove('active');
-        title.innerText = 'Admin Login';
-        subtitle.innerText = 'Sign in to manage college examination schedules';
+        title.innerText = 'Exam Cell Admin Login';
+        subtitle.innerText = 'Sign in to schedule exams, allocate halls, and manage seating limits';
         registerLink.href = '/register.html?role=admin';
       } else {
         tabStudent.classList.add('active');
         tabAdmin.classList.remove('active');
-        title.innerText = 'Student Login';
-        subtitle.innerText = 'Sign in to view your class exam timetable';
+        title.innerText = 'Student Portal Login';
+        subtitle.innerText = 'Sign in to view your class exam timetable & admit slip';
         registerLink.href = '/register.html?role=student';
       }
       hideAlert();
+    }
+
+    // 1-Click Quick Demo Login Filler
+    function fillDemo(role, email, password) {
+      switchRole(role);
+      const emailInput = document.getElementById('email');
+      const passInput = document.getElementById('password');
+
+      emailInput.value = email;
+      passInput.value = password;
+
+      // Subtle flash feedback on inputs
+      emailInput.focus();
+      showAlert(`Prefilled credentials for ${role === 'admin' ? 'Admin' : 'Student'} (${email}). Click "Sign In" to enter!`, 'info');
+    }
+
+    // Password visibility toggle
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById('password');
+      const btn = document.getElementById('togglePasswordBtn');
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        btn.innerText = '🙈';
+      } else {
+        passInput.type = 'password';
+        btn.innerText = '👁️';
+      }
     }
 
     function showAlert(message, type = 'danger') {
@@ -146,7 +266,7 @@
       const submitBtn = document.getElementById('submitBtn');
 
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Signing in...';
+      submitBtn.innerHTML = '<span>Verifying & Signing in...</span>';
 
       try {
         const response = await fetch('/api/auth/login', {
@@ -164,7 +284,7 @@
         // Save auth data
         setAuth(data.token, data.user);
 
-        showAlert('Login successful! Redirecting...', 'success');
+        showAlert('Authentication verified! Redirecting to dashboard...', 'success');
 
         setTimeout(() => {
           if (data.user.role === 'admin') {
@@ -172,12 +292,12 @@
           } else {
             window.location.href = '/student-dashboard.html';
           }
-        }, 600);
+        }, 500);
 
       } catch (err) {
         showAlert(err.message, 'danger');
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Sign In';
+        submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';
       }
     });
   </script>
