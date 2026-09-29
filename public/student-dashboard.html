@@ -8,6 +8,9 @@
 </head>
 <body>
 
+  <!-- Floating Toast Notifications Container -->
+  <div id="toastContainer"></div>
+
   <!-- Navigation -->
   <header class="navbar">
     <a href="/" class="brand">
@@ -30,7 +33,12 @@
     <!-- Student Profile Header Banner -->
     <div class="dashboard-header">
       <div class="dashboard-title">
-        <h1 id="welcomeGreeting">Welcome, Student</h1>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+          <h1 id="welcomeGreeting" style="margin: 0;">Welcome, Student</h1>
+          <div class="live-sync-badge">
+            <span class="pulse-dot"></span> Live Feed Active
+          </div>
+        </div>
         <p id="classBadgeText">Showing timetable for your enrolled academic class</p>
       </div>
       <div style="display: flex; gap: 0.75rem;">
@@ -42,6 +50,9 @@
         </button>
       </div>
     </div>
+
+    <!-- Spotlight: Next Upcoming Exam Card (Populated by JS) -->
+    <div id="spotlightSection" style="display: none;"></div>
 
     <!-- Class Verification Notice -->
     <div class="notice-banner">
@@ -82,6 +93,56 @@
         <div class="stat-details">
           <h3>Department</h3>
           <div class="stat-number" id="statStudentDept" style="font-size: 1.1rem;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Filter Controls Panel -->
+    <div class="panel" style="margin-bottom: 1.5rem; padding: 1.25rem 1.75rem; background: #ffffff; border: 1px solid var(--border);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="font-weight: 700; color: var(--slate-900); display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem;">
+          <span>🔍</span> Filter Timetable by Branch, Year & Section
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="resetToMyClass()">
+          ↩️ Reset to My Enrolled Class
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+        <!-- Branch / Department -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="studentFilterDept">Branch / Department</label>
+          <select id="studentFilterDept" class="form-control" onchange="onStudentFilterChange()">
+            <option value="All Departments">All Branches / Departments</option>
+            <option value="Computer Science">Computer Science & Engineering</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Electronics & Communication">Electronics & Communication</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+          </select>
+        </div>
+
+        <!-- Academic Year -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="studentFilterYear">Academic Year</label>
+          <select id="studentFilterYear" class="form-control" onchange="onStudentFilterChange()">
+            <option value="All">All Academic Years</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+        </div>
+
+        <!-- Class Section -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="studentFilterSection">Class Section</label>
+          <select id="studentFilterSection" class="form-control" onchange="onStudentFilterChange()">
+            <option value="All">All Sections</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+          </select>
         </div>
       </div>
     </div>

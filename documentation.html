@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>College Exam Timetable & Room Management - Project Documentation</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      line-height: 1.5;
+      font-size: 10.5pt;
+      margin: 0;
+      padding: 0;
+    }
+    .cover {
+      text-align: center;
+      padding-top: 2cm;
+      padding-bottom: 2cm;
+      page-break-after: always;
+    }
+    .cover-icon {
+      font-size: 54pt;
+      margin-bottom: 1rem;
+    }
+    .cover h1 {
+      font-size: 26pt;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      font-weight: 800;
+    }
+    .cover h2 {
+      font-size: 16pt;
+      color: #2563eb;
+      font-weight: 600;
+      margin-bottom: 2rem;
+    }
+    .meta-box {
+      display: inline-block;
+      text-align: left;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 1.5rem 2rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .meta-box p {
+      margin: 0.35rem 0;
+      font-size: 11pt;
+    }
+    .meta-box strong {
+      color: #0f172a;
+    }
+    h2.section-title {
+      font-size: 16pt;
+      color: #1e3a8a;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 0.35rem;
+      margin-top: 1.75rem;
+      margin-bottom: 0.85rem;
+    }
+    h3 {
+      font-size: 12.5pt;
+      color: #0f172a;
+      margin-top: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+    p, li {
+      color: #334155;
+    }
+    ul, ol {
+      margin-top: 0.3rem;
+      margin-bottom: 0.8rem;
+      padding-left: 1.4rem;
+    }
+    li {
+      margin-bottom: 0.3rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 9.5pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .card {
+      background: #f8fafc;
+      border-left: 4px solid #2563eb;
+      padding: 0.85rem 1rem;
+      margin: 0.85rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .card-title {
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 0.25rem;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 9pt;
+      overflow-x: auto;
+      margin: 0.6rem 0;
+    }
+    code {
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 9pt;
+      background: #e2e8f0;
+      padding: 0.15rem 0.3rem;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+    .page-break {
+      page-break-after: always;
+    }
+    .diagram {
+      background: #ffffff;
+      border: 1px dashed #94a3b8;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      font-family: Consolas, monospace;
+      font-size: 9pt;
+      line-height: 1.35;
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover">
+    <div class="cover-icon">🎓</div>
+    <h1>College Exam Timetable & Room Management System</h1>
+    <h2>Project Technical Specification & Viva Presentation Manual</h2>
+    
+    <div class="meta-box">
+      <p><strong>System Domain:</strong> Educational Examination Management</p>
+      <p><strong>Architecture:</strong> Client-Server Fullstack Architecture</p>
+      <p><strong>Technology Stack:</strong> Node.js, Express.js, MongoDB, Mongoose, HTML5, CSS3, ES6 JavaScript</p>
+      <p><strong>Security / Auth:</strong> JSON Web Tokens (JWT), BcryptJS Password Hashing</p>
+      <p><strong>GitHub Repository:</strong> https://github.com/samikshamalange2005-byte/student-exam-portal</p>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2 class="section-title">1. Project Overview & Executive Summary</h2>
+  <p>
+    The <strong>College Examination Timetable & Room Management System</strong> is an end-to-end web portal designed to streamline university examination scheduling and eliminate physical notice-board bottlenecks.
+  </p>
+  <p>
+    The application provides two completely separated, role-based workflows:
+  </p>
+  <ul>
+    <li><strong>Admin Portal (Exam Cell Faculty):</strong> Provides faculty administrators with tools to create exam schedules, define examination halls with seating capacities, enforce room capacity restrictions, and prevent overlapping room booking clashes.</li>
+    <li><strong>Student Portal:</strong> Allows registered students to sign in and immediately access an uncluttered, personalized exam timetable that dynamically displays <em>only</em> the examinations applicable to their enrolled academic year and class section.</li>
+  </ul>
+
+  <div class="card">
+    <div class="card-title">💡 30-Second Elevator Pitch for Viva / Interview:</div>
+    <em>"This project is a role-based full-stack web application that solves common examination logistics issues in colleges: it eliminates student confusion by strictly filtering exam timetables to a student's enrolled year and section, validates that assigned students do not exceed room seating limits, and mathematically prevents double-booking of exam venues at overlapping times."</em>
+  </div>
+
+  <h2 class="section-title">2. Real-World Problems Solved</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Traditional College Problem</th>
+        <th style="width: 35%;">Consequences</th>
+        <th style="width: 40%;">System Solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Master Notice Board Clutter</strong></td>
+        <td>Students comb through huge 50-page PDFs or crowded notice boards, causing missed papers or confusion.</td>
+        <td><strong>Class-Specific Filtering:</strong> Students only see examinations for their specific Year and Section.</td>
+      </tr>
+      <tr>
+        <td><strong>Room Double-Booking Clashes</strong></td>
+        <td>Two teachers schedule different exams in the same hall simultaneously, resulting in last-minute venue chaos.</td>
+        <td><strong>Mathematical Clash Prevention:</strong> System checks time intervals and rejects overlapping bookings for the same hall.</td>
+      </tr>
+      <tr>
+        <td><strong>Hall Overcrowding</strong></td>
+        <td>Exams are assigned to small classrooms that cannot seat all enrolled students.</td>
+        <td><strong>Capacity Limit Validation:</strong> Server rejects exam scheduling if student count exceeds room capacity.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 3 -->
+  <h2 class="section-title">3. System Architecture & Tech Stack</h2>
+  <div class="diagram">
++-------------------------------------------------------------------------+
+|                              CLIENT TIER                                |
+|        Responsive Web UI (HTML5, Modern CSS3, Vanilla JavaScript)       |
+|  - Role-Switch Login/Register  - Admin Dashboard  - Student Dashboard   |
++------------------------------------+------------------------------------+
+                                     |
+                                     | HTTP / REST API (JSON)
+                                     | Authorization: Bearer &lt;JWT&gt;
+                                     v
++-------------------------------------------------------------------------+
+|                        BACKEND APPLICATION TIER                         |
+|                       Node.js + Express.js Server                       |
+|                                                                         |
+|   [Auth Controller]       [Exam Controller]       [Room Controller]     |
+|   - bcryptjs hashing      - Class filtering       - CRUD rooms          |
+|   - JWT authentication    - Conflict detector     - Capacity validation |
++------------------------------------+------------------------------------+
+                                     |
+                                     | Mongoose ODM
+                                     v
++-------------------------------------------------------------------------+
+|                              DATABASE TIER                              |
+|                           MongoDB (NoSQL)                               |
+|        [Users Collection]   [Rooms Collection]   [Exams Collection]     |
++-------------------------------------------------------------------------+
+  </div>
+
+  <h3>Component Breakdown:</h3>
+  <ul>
+    <li><strong>Frontend (Vanilla HTML5, CSS3, ES6 JS):</strong> Lightweight, zero compilation build steps, fast loading, featuring custom CSS variables, responsive grids, and media print styling for student exam passes.</li>
+    <li><strong>Backend (Node.js & Express.js):</strong> RESTful API server with asynchronous non-blocking I/O handling authentication, room management, and clash detection.</li>
+    <li><strong>Database (MongoDB with Mongoose):</strong> High-performance NoSQL document store with strict Mongoose schema validation.</li>
+    <li><strong>Authentication (JWT & BcryptJS):</strong> Passwords securely hashed with 10 salt rounds; stateless JWT tokens maintain session security without server-side memory overhead.</li>
+  </ul>
+
+  <!-- SECTION 4 -->
+  <h2 class="section-title">4. Database Schema & Data Models</h2>
+
+  <h3>1. User Schema (<code>models/User.js</code>)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>String</td><td>Full Name of Student or Administrator</td></tr>
+      <tr><td><code>email</code></td><td>String</td><td>Unique login email</td></tr>
+      <tr><td><code>password</code></td><td>String</td><td>Cryptographic hash produced by BcryptJS</td></tr>
+      <tr><td><code>role</code></td><td>String</td><td><code>'admin'</code> or <code>'student'</code></td></tr>
+      <tr><td><code>rollNo</code></td><td>String</td><td>Student ID / Roll number (e.g. <code>24CS001</code>)</td></tr>
+      <tr><td><code>department</code></td><td>String</td><td>e.g. Computer Science & Engineering</td></tr>
+      <tr><td><code>year</code></td><td>String</td><td>Enrolled Year (e.g. <code>'1st Year'</code>, <code>'2nd Year'</code>, etc.)</td></tr>
+      <tr><td><code>section</code></td><td>String</td><td>Class Section (e.g. <code>'A'</code>, <code>'B'</code>, <code>'C'</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2. Room Schema (<code>models/Room.js</code>)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>String</td><td>Unique room/hall name (e.g. <code>Hall 101</code>, <code>Auditorium</code>)</td></tr>
+      <tr><td><code>capacity</code></td><td>Number</td><td>Maximum seating capacity (must be &ge; 1)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3. Exam Schema (<code>models/Exam.js</code>)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>subjectName</code></td><td>String</td><td>Course name (e.g. <em>Data Structures & Algorithms</em>)</td></tr>
+      <tr><td><code>subjectCode</code></td><td>String</td><td>Course code (e.g. <code>CS201</code>)</td></tr>
+      <tr><td><code>examDate</code></td><td>String</td><td>Date formatted as <code>YYYY-MM-DD</code></td></tr>
+      <tr><td><code>startTime</code> / <code>endTime</code></td><td>String</td><td>Exam session times (e.g. <code>10:00 AM</code> to <code>01:00 PM</code>)</td></tr>
+      <tr><td><code>year</code> / <code>section</code></td><td>String</td><td>Target class receiving the timetable</td></tr>
+      <tr><td><code>room</code> / <code>roomId</code></td><td>String / ObjectId</td><td>Assigned examination venue</td></tr>
+      <tr><td><code>roomCapacity</code></td><td>Number</td><td>Seat limit of the assigned room</td></tr>
+      <tr><td><code>studentCount</code></td><td>Number</td><td>Number of students assigned for the exam</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 5 -->
+  <h2 class="section-title">5. Core Algorithms & Logic Explained</h2>
+
+  <h3>A. Strict Class-Specific Timetable Filtering</h3>
+  <p>
+    When a student logs in and accesses <code>GET /api/exams</code>, the backend verifies their JWT token, extracting their enrolled <code>year</code> and <code>section</code>. The query strictly restricts the returned documents:
+  </p>
+  <pre><code>if (req.user.role === 'student') {
+  query.year = req.user.year;
+  query.$or = [
+    { section: req.user.section },
+    { section: 'All' }
+  ];
+}</code></pre>
+  <p>
+    <strong>Guaranteed Result:</strong> A 2nd-year Section A student will never see 3rd-year Section B exams, preventing cross-class timetable confusion.
+  </p>
+
+  <h3>B. Room Seating Capacity Limit Check</h3>
+  <p>
+    Before an exam is created, the system checks the assigned student count against the room's maximum seating capacity:
+  </p>
+  <pre><code>if (assignedStudents > targetRoom.capacity) {
+  return res.status(400).json({
+    message: `Room capacity exceeded! Room "${targetRoom.name}" has a capacity of ${targetRoom.capacity}, but ${assignedStudents} students are assigned.`
+  });
+}</code></pre>
+
+  <h3>C. Time-Interval Overlap Conflict Formula</h3>
+  <p>
+    To verify whether two exams scheduled in the same hall clash, start and end times are parsed into <strong>total minutes from midnight</strong>:
+  </p>
+  <ul>
+    <li><code>10:00 AM</code> = (10 &times; 60) + 0 = <strong>600 minutes</strong></li>
+    <li><code>01:00 PM</code> = (13 &times; 60) + 0 = <strong>780 minutes</strong></li>
+  </ul>
+  <p>
+    Given two time intervals [S<sub>1</sub>, E<sub>1</sub>] and [S<sub>2</sub>, E<sub>2</sub>], they <strong>overlap if and only if</strong>:
+  </p>
+  <div class="card" style="text-align: center; font-size: 13pt; font-weight: bold; color: #1e3a8a;">
+    max(Start<sub>1</sub>, Start<sub>2</sub>) &lt; min(End<sub>1</sub>, End<sub>2</sub>)
+  </div>
+  <p>
+    If this condition evaluates to <code>true</code> for any exam already booked in the same hall on that date, the request is rejected with HTTP 400 and a descriptive conflict alert. Consecutive sessions (e.g. 10:00 AM&ndash;01:00 PM and 02:00 PM&ndash;05:00 PM) do not overlap and are accepted cleanly.
+  </p>
+
+  <h2 class="section-title">6. REST API Specification</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Path</th>
+        <th>Auth Role</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td>Public</td><td>Registers student or admin (with admin key)</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>Public</td><td>Authenticates credentials, returns JWT token</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/auth/me</code></td><td>Authenticated</td><td>Retrieves active user profile</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/rooms</code></td><td>Authenticated</td><td>Lists all rooms with capacities</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/rooms</code></td><td>Admin</td><td>Creates new room with capacity</td></tr>
+      <tr><td><code>DELETE</code></td><td><code>/api/rooms/:id</code></td><td>Admin</td><td>Deletes room (safely guarded against active exams)</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/exams</code></td><td>Authenticated</td><td>Fetches class-filtered exams for student, all for admin</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/exams</code></td><td>Admin</td><td>Schedules exam with capacity &amp; clash checks</td></tr>
+      <tr><td><code>DELETE</code></td><td><code>/api/exams/:id</code></td><td>Admin</td><td>Cancels / removes an exam schedule</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/exams/stats</code></td><td>Admin</td><td>Returns KPI dashboard summary counts</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 7 -->
+  <h2 class="section-title">7. Step-by-Step Live Viva / Demo Script</h2>
+  <ol>
+    <li>
+      <strong>Home Page Walkthrough (<code>http://localhost:5000</code>):</strong><br>
+      Highlight the dual-portal landing cards for <em>Admin Portal</em> and <em>Student Portal</em>.
+    </li>
+    <li>
+      <strong>Admin Dashboard Demo (<code>admin@college.edu</code> / <code>admin123</code>):</strong><br>
+      <ul>
+        <li>Show KPI overview counters (Total Scheduled, Students, Rooms, Upcoming).</li>
+        <li>Open <em>Manage Rooms</em>: Add <code>Physics Lab 1</code> with capacity <code>40</code>. Show it appears immediately.</li>
+        <li><strong>Demonstrate Capacity Enforcement:</strong> Try to schedule an exam in <code>Physics Lab 1</code> with 50 students. Point out the clear rejection alert.</li>
+        <li><strong>Demonstrate Clash Prevention:</strong> Schedule an exam in <code>Hall 101</code> from 10:00 AM to 01:00 PM. Attempt to schedule another in <code>Hall 101</code> from 11:30 AM to 02:30 PM. Show the clash alert. Change time to 02:00 PM &ndash; 05:00 PM and show it succeed.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Student View Demo (<code>alice@college.edu</code> / <code>student123</code>):</strong><br>
+      <ul>
+        <li>Log in as Alice (2nd Year, Section A).</li>
+        <li>Point out the notice banner confirming class-specific filtering.</li>
+        <li>Show that Alice sees <em>only</em> 2nd Year Section A papers with assigned rooms, capacities, and timing badges.</li>
+        <li>Click <strong>Print Timetable</strong> to demonstrate the printable admit slip.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Cross-Check with Second Student (<code>bob@college.edu</code> / <code>student123</code>):</strong><br>
+      Sign in as Bob (3rd Year, Section B) to prove that Bob receives a completely different timetable tailored to 3rd-year classes.
+    </li>
+  </ol>
+
+  <h2 class="section-title">8. Common Viva Questions &amp; Model Answers</h2>
+  <div class="card">
+    <div class="card-title">Q1: Why use JWT instead of standard cookie sessions?</div>
+    JWT tokens are stateless and self-contained. The server does not maintain session memory, allowing the application to scale horizontally across multiple instances without sticky sessions or centralized Redis session stores.
+  </div>
+  <div class="card">
+    <div class="card-title">Q2: How are passwords secured in the database?</div>
+    Passwords are never stored in plaintext. They are encrypted using <code>bcryptjs</code> with 10 salt rounds, utilizing one-way salted hashing to resist rainbow table and dictionary attacks.
+  </div>
+  <div class="card">
+    <div class="card-title">Q3: How does the clash detection algorithm work with 12-hour AM/PM times?</div>
+    The backend parses 12-hour AM/PM strings into total minutes from midnight (0 to 1439). It then evaluates whether max(S<sub>1</sub>, S<sub>2</sub>) &lt; min(E<sub>1</sub>, E<sub>2</sub>).
+  </div>
+  <div class="card">
+    <div class="card-title">Q4: Can an admin delete a room that is currently in use?</div>
+    No. The <code>DELETE /api/rooms/:id</code> route queries active scheduled exams assigned to that room and blocks deletion if active schedules exist, preserving relational data integrity.
+  </div>
+
+  <h2 class="section-title">9. Quick Run Commands</h2>
+  <pre><code># Start the Node.js server
+npm start
+
+# Run room capacity & clash prevention automated test suite
+node test-rooms-clash.js
+
+# Run authentication and class filtering test suite
+node test-api.js</code></pre>
+
+</body>
+</html>

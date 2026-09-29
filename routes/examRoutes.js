@@ -4,6 +4,7 @@ const Exam = require('../models/Exam');
 const User = require('../models/User');
 const Room = require('../models/Room');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const { broadcastEvent } = require('../utils/sse');
 
 // Convert "10:00 AM" or "14:30" string to minutes from midnight
 function timeToMinutes(timeStr) {
@@ -34,12 +35,25 @@ router.get('/', verifyToken, async (req, res) => {
     let query = {};
 
     if (req.user.role === 'student') {
-      // STRICT FILTER: Match student's year, and match section or "All"
-      query.year = req.user.year;
-      query.$or = [
-        { section: req.user.section },
-        { section: 'All' }
-      ];
+      // Allows student to filter by branch (department), year, and section
+      const targetYear = req.query.year || req.user.year;
+      const targetSection = req.query.section || req.user.section;
+      const targetDept = req.query.department || '';
+
+      if (targetYear && targetYear !== 'All') {
+        query.year = targetYear;
+      }
+
+      if (targetSection && targetSection !== 'All') {
+        query.$or = [
+          { section: targetSection },
+          { section: 'All' }
+        ];
+      }
+
+      if (targetDept && targetDept !== 'All' && targetDept !== 'All Departments') {
+        query.department = targetDept;
+      }
     } else if (req.user.role === 'admin') {
       // Optional query filters for admin
       if (req.query.year) query.year = req.query.year;
@@ -154,6 +168,22 @@ router.post('/', verifyToken, requireRole('admin'), async (req, res) => {
 
     await newExam.save();
 
+    // Broadcast real-time event to connected students and admins
+    broadcastEvent('exam_created', {
+      _id: newExam._id,
+      subjectName: newExam.subjectName,
+      subjectCode: newExam.subjectCode,
+      examDate: newExam.examDate,
+      startTime: newExam.startTime,
+      endTime: newExam.endTime,
+      department: newExam.department,
+      year: newExam.year,
+      section: newExam.section,
+      room: newExam.room,
+      roomCapacity: newExam.roomCapacity,
+      studentCount: newExam.studentCount
+    });
+
     return res.status(201).json({
       success: true,
       message: `Exam scheduled successfully in ${targetRoom.name} (Capacity: ${targetRoom.capacity}, Students: ${assignedStudents}).`,
@@ -174,6 +204,14 @@ router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
     }
 
     await Exam.findByIdAndDelete(req.params.id);
+
+    // Broadcast real-time deletion
+    broadcastEvent('exam_deleted', {
+      _id: req.params.id,
+      subjectName: exam.subjectName,
+      year: exam.year,
+      section: exam.section
+    });
 
     return res.json({
       success: true,

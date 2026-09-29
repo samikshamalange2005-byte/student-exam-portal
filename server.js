@@ -20,10 +20,17 @@ app.use(express.urlencoded({ extended: true }));
 // Static frontend folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+const { addClient } = require('./utils/sse');
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/rooms', roomRoutes);
+
+// Real-time Server-Sent Events endpoint
+app.get('/api/events', (req, res) => {
+  addClient(req, res);
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

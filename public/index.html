@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>College Exam Timetable Portal</title>
+  <title>Apex College - Examination Timetable & Venue Portal</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -15,6 +15,9 @@
       <span>Apex College Exams</span>
     </a>
     <div class="nav-links" id="navUserArea">
+      <a href="/Project_Documentation.pdf" target="_blank" class="btn btn-outline btn-sm">
+        📄 View PDF Docs
+      </a>
       <a href="/login.html" class="btn btn-secondary btn-sm">Login</a>
       <a href="/register.html" class="btn btn-primary btn-sm">Register</a>
     </div>
@@ -23,8 +26,20 @@
   <!-- Hero & Landing -->
   <main class="container">
     <div class="hero">
-      <h1>College Examination Timetable Portal</h1>
-      <p>Secure, role-based exam scheduling and timetable access. Administrators manage and publish schedules, while students access their class-specific exam dates and venues.</p>
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 0.35rem 0.95rem; border-radius: 9999px; background: #e0e7ff; color: #4338ca; font-size: 0.825rem; font-weight: 700; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(79, 70, 229, 0.1);">
+        <span class="pulse-dot"></span> Live Real-Time Timetable Sync Active
+      </div>
+      <h1>College Examination Timetable <br><span class="hero-highlight">& Room Management Portal</span></h1>
+      <p>Modern role-based exam scheduling with instant live updates. Administrators manage exam schedules and room capacities while preventing venue booking clashes; students automatically view their class-tailored timetables.</p>
+      
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/login.html?role=student" class="btn btn-primary" style="padding: 0.75rem 1.6rem; font-size: 1rem;">
+          🎒 Student Login
+        </a>
+        <a href="/login.html?role=admin" class="btn btn-secondary" style="padding: 0.75rem 1.6rem; font-size: 1rem;">
+          🏛️ Admin Portal
+        </a>
+      </div>
     </div>
 
     <!-- Role Portals Grid -->
@@ -38,16 +53,16 @@
             <span class="badge badge-amber">Faculty & Exam Cell</span>
           </div>
         </div>
-        <p>Manage the college exam master schedule. Add new examinations by course, year, and section, view all scheduled papers, and maintain the timetable.</p>
+        <p>Schedule college examinations, manage hall capacities, and monitor live exam feeds with zero booking conflicts.</p>
         <ul class="portal-features">
           <li>Create & publish new exam schedules</li>
-          <li>Assign date, time, year, section & exam hall</li>
-          <li>Comprehensive master timetable view</li>
-          <li>Delete or modify upcoming exams</li>
+          <li>Assign examination halls with max seating limits</li>
+          <li>Automated venue double-booking clash prevention</li>
+          <li>Real-time broadcasting to all student dashboards</li>
         </ul>
         <div class="portal-actions">
-          <a href="/login.html?role=admin" class="btn btn-primary">Admin Login</a>
-          <a href="/register.html?role=admin" class="btn btn-secondary">Admin Sign Up</a>
+          <a href="/login.html?role=admin" class="btn btn-primary">Admin Sign In</a>
+          <a href="/register.html?role=admin" class="btn btn-secondary">Register Admin</a>
         </div>
       </div>
 
@@ -57,19 +72,19 @@
           <div class="portal-icon icon-student">🎒</div>
           <div>
             <h2>Student Portal</h2>
-            <span class="badge badge-blue">Class Specific View</span>
+            <span class="badge badge-blue">Class-Specific Timetable</span>
           </div>
         </div>
-        <p>Access your personalized examination timetable. Students only see upcoming exam dates, subjects, timings, and halls specifically matching their enrolled Year and Section.</p>
+        <p>Access your personalized examination schedule. Live notifications alert you immediately whenever a new paper is scheduled for your class.</p>
         <ul class="portal-features">
-          <li>Personalized class timetable (Year & Section)</li>
-          <li>Detailed subject name & code mapping</li>
-          <li>Exam venue and hall room allocation</li>
-          <li>Print-friendly exam schedule slip</li>
+          <li>Tailored view: only shows your Year & Section papers</li>
+          <li>Real-time live sync without manual refreshing</li>
+          <li>Venue, timings, and hall seating capacity indicators</li>
+          <li>One-click printable official admit slip / exam pass</li>
         </ul>
         <div class="portal-actions">
-          <a href="/login.html?role=student" class="btn btn-primary">Student Login</a>
-          <a href="/register.html?role=student" class="btn btn-secondary">Student Sign Up</a>
+          <a href="/login.html?role=student" class="btn btn-primary">Student Sign In</a>
+          <a href="/register.html?role=student" class="btn btn-secondary">Register Student</a>
         </div>
       </div>
     </div>

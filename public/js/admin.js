@@ -1,4 +1,4 @@
-// Admin Dashboard Controller with Room Management & Clash Prevention
+// Admin Dashboard Controller with Room Management, Capacity Meter & Clash Prevention
 
 let allExams = [];
 let allRooms = [];
@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadStats();
   loadRooms();
   loadExams();
+  setupAdminLiveEvents();
 
   // Set default minimum date in form to today
   const todayStr = new Date().toISOString().split('T')[0];
@@ -20,6 +21,92 @@ document.addEventListener('DOMContentLoaded', () => {
     examDateInput.value = todayStr;
   }
 });
+
+// Real-time EventSource for live admin synchronization
+function setupAdminLiveEvents() {
+  try {
+    const evt = new EventSource('/api/events');
+    evt.addEventListener('exam_created', () => {
+      loadStats();
+      loadExams();
+    });
+    evt.addEventListener('exam_deleted', () => {
+      loadStats();
+      loadExams();
+    });
+  } catch (e) {
+    // Ignore fallback
+  }
+}
+
+// Switch between Section Views (Schedule Exam / Manage Rooms / Master Timetable)
+function switchAdminSection(sectionName) {
+  const secExam = document.getElementById('addExamSection');
+  const secRooms = document.getElementById('roomManagementSection');
+  const secTimetable = document.getElementById('masterTimetableSection');
+
+  const btnExam = document.getElementById('tabBtnExam');
+  const btnRooms = document.getElementById('tabBtnRooms');
+  const btnTimetable = document.getElementById('tabBtnTimetable');
+
+  // Reset all
+  secExam.style.display = 'none';
+  secRooms.style.display = 'none';
+  secTimetable.style.display = 'none';
+
+  btnExam.classList.remove('active');
+  btnRooms.classList.remove('active');
+  btnTimetable.classList.remove('active');
+
+  if (sectionName === 'rooms') {
+    secRooms.style.display = 'block';
+    btnRooms.classList.add('active');
+  } else if (sectionName === 'timetable') {
+    secTimetable.style.display = 'block';
+    btnTimetable.classList.add('active');
+  } else {
+    secExam.style.display = 'block';
+    btnExam.classList.add('active');
+  }
+}
+
+// Real-Time Capacity Meter Indicator
+function checkCapacityMeter() {
+  const roomSelect = document.getElementById('roomSelect');
+  const studentCountInput = document.getElementById('studentCount');
+  const feedbackEl = document.getElementById('capacityFeedback');
+
+  if (!roomSelect || !studentCountInput || !feedbackEl) return;
+
+  const selectedOpt = roomSelect.options[roomSelect.selectedIndex];
+  if (!roomSelect.value || !selectedOpt) {
+    feedbackEl.className = 'capacity-meter-pill meter-ok';
+    feedbackEl.innerHTML = '<span>ℹ️</span> Select an examination room above to check seating limits.';
+    return;
+  }
+
+  const capacity = parseInt(selectedOpt.getAttribute('data-capacity'), 10) || 0;
+  const count = parseInt(studentCountInput.value, 10) || 0;
+
+  if (count <= 0) {
+    feedbackEl.className = 'capacity-meter-pill meter-warn';
+    feedbackEl.innerHTML = '<span>⚠️</span> Please specify the number of students assigned.';
+    return;
+  }
+
+  const percentage = Math.round((count / capacity) * 100);
+
+  if (count > capacity) {
+    feedbackEl.className = 'capacity-meter-pill meter-danger';
+    feedbackEl.innerHTML = `<span>❌</span> <strong>Capacity Exceeded!</strong> ${count} students will not fit in this room (${capacity} max seats).`;
+  } else if (count === capacity) {
+    feedbackEl.className = 'capacity-meter-pill meter-warn';
+    feedbackEl.innerHTML = `<span>⚠️</span> <strong>Room at 100% capacity:</strong> ${count} / ${capacity} seats assigned.`;
+  } else {
+    feedbackEl.className = 'capacity-meter-pill meter-ok';
+    feedbackEl.innerHTML = `<span>✅</span> <strong>Capacity Valid:</strong> ${count} / ${capacity} seats assigned (${percentage}% full).`;
+  }
+}
 
 function showAlert(message, type = 'danger') {
   const alertBox = document.getElementById('dashboardAlert');
@@ -74,7 +161,7 @@ async function loadRooms() {
     if (allRooms.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+          <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
             No rooms added yet. Create one on the left.
           </td>
         </tr>
@@ -96,11 +183,13 @@ async function loadRooms() {
     // Populate room select dropdown
     const previousSelection = roomSelect.value;
     roomSelect.innerHTML = '<option value="">-- Select an Exam Room --</option>' + 
-      allRooms.map(r => `<option value="${r._id}" data-capacity="${r.capacity}" data-name="${r.name}">${r.name} (Max Capacity: ${r.capacity} seats)</option>`).join('');
+      allRooms.map(r => `<option value="${r._id}" data-capacity="${r.capacity}" data-name="${r.name}">${r.name} (Max: ${r.capacity} seats)</option>`).join('');
 
     if (previousSelection) {
       roomSelect.value = previousSelection;
     }
+
+    checkCapacityMeter();
 
   } catch (err) {
     console.error('Error loading rooms:', err);
@@ -232,7 +321,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString(undefined, options);
 }
 
-// Render exams to master table
+// Render exams to master table with Capacity Progress Bars
 function renderExams(exams) {
   const tbody = document.getElementById('examsTableBody');
 
@@ -243,7 +332,7 @@ function renderExams(exams) {
           <div class="empty-state">
             <div class="empty-state-icon">📅</div>
             <h3>No Exam Schedules Found</h3>
-            <p>No exams match your current filters. Add a new exam above to publish it to students.</p>
+            <p>No exams match your current filters. Schedule an exam above to publish it to students.</p>
           </div>
         </td>
       </tr>
@@ -254,7 +343,8 @@ function renderExams(exams) {
   tbody.innerHTML = exams.map(exam => {
     const capacity = exam.roomCapacity || 60;
     const students = exam.studentCount || 30;
-    const usagePercent = Math.round((students / capacity) * 100);
+    const usagePercent = Math.min(Math.round((students / capacity) * 100), 100);
+    const fillColor = usagePercent > 90 ? '#ef4444' : (usagePercent > 70 ? '#f59e0b' : '#10b981');
 
     return `
       <tr>
@@ -263,7 +353,7 @@ function renderExams(exams) {
           <div style="font-size: 0.8rem; color: var(--text-muted);">${exam.examDate}</div>
         </td>
         <td>
-          <span style="font-weight: 600;">${exam.startTime}</span> - ${exam.endTime}
+          <span style="font-weight: 700; color: var(--primary);">${exam.startTime}</span> – ${exam.endTime}
         </td>
         <td>
           <strong>${exam.subjectName}</strong>
@@ -281,9 +371,11 @@ function renderExams(exams) {
           <strong>📍 ${exam.room}</strong>
         </td>
         <td>
-          <div><strong>${students}</strong> / ${capacity} seats</div>
-          <div style="font-size: 0.75rem; color: ${usagePercent > 90 ? 'var(--danger)' : 'var(--text-muted)'};">
-            ${usagePercent}% capacity
+          <div class="capacity-container">
+            <div><strong>${students}</strong> / ${capacity} seats (${usagePercent}%)</div>
+            <div class="capacity-progress-bg">
+              <div class="capacity-progress-fill" style="width: ${usagePercent}%; background: ${fillColor};"></div>
+            </div>
           </div>
         </td>
         <td style="text-align: right;">
@@ -380,13 +472,16 @@ document.getElementById('createExamForm').addEventListener('submit', async (e) =
     // Reset fields
     document.getElementById('subjectName').value = '';
     document.getElementById('subjectCode').value = '';
+    checkCapacityMeter();
 
     loadExams();
     loadStats();
+    // Switch to timetable tab to show the published exam
+    switchAdminSection('timetable');
   } catch (err) {
     showAlert(err.message, 'danger');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.innerText = 'Publish Exam Schedule';
+    submitBtn.innerText = '✨ Publish Exam Schedule';
   }
 });
