@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Exam Timetable Management</title>
+  <title>Admin Dashboard - Exam & Room Management</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -23,12 +23,15 @@
     <!-- Header -->
     <div class="dashboard-header">
       <div class="dashboard-title">
-        <h1>Master Exam Timetable Management</h1>
-        <p>Schedule college examinations and publish class-specific timetables</p>
+        <h1>Master Exam & Room Management</h1>
+        <p>Schedule college examinations, manage room capacities, and prevent venue booking clashes</p>
       </div>
-      <div>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="#roomManagementSection" class="btn btn-secondary">
+          <span>🏢</span> Manage Rooms
+        </a>
         <a href="#addExamSection" class="btn btn-primary">
-          <span>➕</span> Schedule New Exam
+          <span>📅</span> Schedule New Exam
         </a>
       </div>
     </div>
@@ -55,8 +58,8 @@
       <div class="stat-card">
         <div class="stat-icon purple">🏢</div>
         <div class="stat-details">
-          <h3>Departments</h3>
-          <div class="stat-number" id="statDepartments">-</div>
+          <h3>Exam Rooms</h3>
+          <div class="stat-number" id="statTotalRooms">-</div>
         </div>
       </div>
       <div class="stat-card">
@@ -68,11 +71,75 @@
       </div>
     </div>
 
+    <!-- Room Management Panel -->
+    <div class="panel" id="roomManagementSection">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🏢</span> Manage Examination Rooms & Seating Capacity
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; align-items: start;">
+        <!-- Add Room Form -->
+        <div style="background: var(--slate-100); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <h4 style="margin-bottom: 1rem; color: var(--slate-800);">Add New Room</h4>
+          <form id="createRoomForm">
+            <div class="form-group">
+              <label for="newRoomName">Room / Hall Name <span style="color: var(--danger)">*</span></label>
+              <input 
+                type="text" 
+                id="newRoomName" 
+                class="form-control" 
+                placeholder="e.g. Hall 101, Audi A" 
+                required
+              >
+            </div>
+            <div class="form-group">
+              <label for="newRoomCapacity">Max Seating Capacity <span style="color: var(--danger)">*</span></label>
+              <input 
+                type="number" 
+                id="newRoomCapacity" 
+                class="form-control" 
+                placeholder="e.g. 60" 
+                min="1" 
+                required
+              >
+              <div class="form-hint">System will prevent assigning more students than this limit.</div>
+            </div>
+            <button type="submit" id="createRoomBtn" class="btn btn-primary btn-sm" style="width: 100%;">
+              ➕ Add Room
+            </button>
+          </form>
+        </div>
+
+        <!-- Rooms List -->
+        <div>
+          <h4 style="margin-bottom: 1rem; color: var(--slate-800);">Available Exam Rooms</h4>
+          <div class="table-responsive">
+            <table class="custom-table" style="font-size: 0.875rem;">
+              <thead>
+                <tr>
+                  <th>Room Name</th>
+                  <th>Capacity</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="roomsTableBody">
+                <tr>
+                  <td colspan="3" style="text-align: center;">Loading rooms...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Add Exam Form Panel -->
     <div class="panel" id="addExamSection">
       <div class="panel-header">
         <div class="panel-title">
-          <span>📅</span> Schedule New Examination
+          <span>📅</span> Schedule Examination & Assign Room
         </div>
       </div>
 
@@ -84,7 +151,7 @@
               type="text" 
               id="subjectName" 
               class="form-control" 
-              placeholder="e.g. Data Structures & Algorithms" 
+              placeholder="e.g. Operating Systems & Algorithms" 
               required
             >
           </div>
@@ -94,7 +161,7 @@
               type="text" 
               id="subjectCode" 
               class="form-control" 
-              placeholder="e.g. CS201" 
+              placeholder="e.g. CS301" 
               required
             >
           </div>
@@ -162,25 +229,37 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="department">Department</label>
-            <select id="department" class="form-control">
-              <option value="Computer Science">Computer Science & Engineering</option>
-              <option value="Information Technology">Information Technology</option>
-              <option value="Electronics & Communication">Electronics & Communication</option>
-              <option value="Mechanical Engineering">Mechanical Engineering</option>
-              <option value="Civil Engineering">Civil Engineering</option>
+            <label for="roomSelect">Assign Room / Hall <span style="color: var(--danger)">*</span></label>
+            <select id="roomSelect" class="form-control" required>
+              <option value="">-- Select an Exam Room --</option>
             </select>
+            <div class="form-hint">Shows room seating capacity. System prevents double-booking.</div>
           </div>
+
           <div class="form-group">
-            <label for="room">Exam Hall / Room</label>
+            <label for="studentCount">Students Assigned to Room <span style="color: var(--danger)">*</span></label>
             <input 
-              type="text" 
-              id="room" 
+              type="number" 
+              id="studentCount" 
               class="form-control" 
-              placeholder="e.g. Academic Block Hall 302"
-              value="Main Exam Hall"
+              placeholder="e.g. 40"
+              value="35"
+              min="1"
+              required
             >
+            <div class="form-hint">Must not exceed the selected room's seating capacity.</div>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" class="form-control">
+            <option value="Computer Science">Computer Science & Engineering</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Electronics & Communication">Electronics & Communication</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+          </select>
         </div>
 
         <button type="submit" id="createExamBtn" class="btn btn-primary" style="margin-top: 0.5rem;">
@@ -193,7 +272,7 @@
     <div class="panel">
       <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
         <div class="panel-title">
-          <span>📋</span> All Scheduled Examinations
+          <span>📋</span> Master Examination Timetable
         </div>
         <!-- Filters -->
         <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
@@ -229,9 +308,9 @@
               <th>Date & Day</th>
               <th>Time</th>
               <th>Subject & Code</th>
-              <th>Year</th>
-              <th>Section</th>
-              <th>Venue / Room</th>
+              <th>Class Target</th>
+              <th>Assigned Room</th>
+              <th>Seating / Capacity</th>
               <th style="text-align: right;">Action</th>
             </tr>
           </thead>

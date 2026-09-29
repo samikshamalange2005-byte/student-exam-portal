@@ -1,6 +1,7 @@
-// Admin Dashboard Controller
+// Admin Dashboard Controller with Room Management & Clash Prevention
 
 let allExams = [];
+let allRooms = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   const user = protectPage('admin');
@@ -8,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupNavUser();
   loadStats();
+  loadRooms();
   loadExams();
 
   // Set default minimum date in form to today
@@ -29,7 +31,7 @@ function showAlert(message, type = 'danger') {
 
   setTimeout(() => {
     alertBox.style.display = 'none';
-  }, 5000);
+  }, 6000);
 }
 
 // Fetch overview stats
@@ -44,11 +46,136 @@ async function loadStats() {
     if (data.success && data.stats) {
       document.getElementById('statTotalExams').innerText = data.stats.totalExams;
       document.getElementById('statTotalStudents').innerText = data.stats.totalStudents;
-      document.getElementById('statDepartments').innerText = data.stats.totalDepartments;
+      document.getElementById('statTotalRooms').innerText = data.stats.totalRooms;
       document.getElementById('statUpcoming').innerText = data.stats.upcomingExams;
     }
   } catch (err) {
     console.error('Stats error:', err);
+  }
+}
+
+// Load and render all rooms
+async function loadRooms() {
+  const tbody = document.getElementById('roomsTableBody');
+  const roomSelect = document.getElementById('roomSelect');
+
+  try {
+    const token = getAuthToken();
+    const res = await fetch('/api/rooms', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || 'Failed to load rooms');
+
+    allRooms = data.rooms || [];
+
+    // Populate rooms table
+    if (allRooms.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">
+            No rooms added yet. Create one on the left.
+          </td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = allRooms.map(room => `
+        <tr>
+          <td><strong>${room.name}</strong></td>
+          <td><span class="badge badge-purple">${room.capacity} seats</span></td>
+          <td style="text-align: right;">
+            <button class="btn btn-danger btn-sm" onclick="deleteRoom('${room._id}', '${room.name}')">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Populate room select dropdown
+    const previousSelection = roomSelect.value;
+    roomSelect.innerHTML = '<option value="">-- Select an Exam Room --</option>' + 
+      allRooms.map(r => `<option value="${r._id}" data-capacity="${r.capacity}" data-name="${r.name}">${r.name} (Max Capacity: ${r.capacity} seats)</option>`).join('');
+
+    if (previousSelection) {
+      roomSelect.value = previousSelection;
+    }
+
+  } catch (err) {
+    console.error('Error loading rooms:', err);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align: center; color: var(--danger);">
+          Failed to load rooms: ${err.message}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Add new room
+document.getElementById('createRoomForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const nameInput = document.getElementById('newRoomName');
+  const capInput = document.getElementById('newRoomCapacity');
+  const btn = document.getElementById('createRoomBtn');
+
+  btn.disabled = true;
+  btn.innerText = 'Adding...';
+
+  try {
+    const token = getAuthToken();
+    const res = await fetch('/api/rooms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: nameInput.value.trim(),
+        capacity: parseInt(capInput.value, 10)
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to create room');
+
+    showAlert(`Room "${data.room.name}" (Capacity: ${data.room.capacity}) added successfully!`, 'success');
+    nameInput.value = '';
+    capInput.value = '';
+    loadRooms();
+    loadStats();
+  } catch (err) {
+    showAlert(err.message, 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '➕ Add Room';
+  }
+});
+
+// Delete room
+async function deleteRoom(id, name) {
+  if (!confirm(`Are you sure you want to delete room "${name}"?`)) {
+    return;
+  }
+
+  try {
+    const token = getAuthToken();
+    const res = await fetch(`/api/rooms/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to delete room');
+
+    showAlert(`Room "${name}" removed successfully.`, 'success');
+    loadRooms();
+    loadStats();
+  } catch (err) {
+    showAlert(err.message, 'danger');
   }
 }
 
@@ -125,6 +252,10 @@ function renderExams(exams) {
   }
 
   tbody.innerHTML = exams.map(exam => {
+    const capacity = exam.roomCapacity || 60;
+    const students = exam.studentCount || 30;
+    const usagePercent = Math.round((students / capacity) * 100);
+
     return `
       <tr>
         <td>
@@ -142,14 +273,18 @@ function renderExams(exams) {
         </td>
         <td>
           <span class="badge badge-purple">${exam.year}</span>
-        </td>
-        <td>
           <span class="badge ${exam.section === 'All' ? 'badge-blue' : 'badge-green'}">
             ${exam.section === 'All' ? 'All Sections' : 'Section ' + exam.section}
           </span>
         </td>
         <td>
-          <span>📍 ${exam.room}</span>
+          <strong>📍 ${exam.room}</strong>
+        </td>
+        <td>
+          <div><strong>${students}</strong> / ${capacity} seats</div>
+          <div style="font-size: 0.75rem; color: ${usagePercent > 90 ? 'var(--danger)' : 'var(--text-muted)'};">
+            ${usagePercent}% capacity
+          </div>
         </td>
         <td style="text-align: right;">
           <button class="btn btn-danger btn-sm" onclick="deleteExam('${exam._id}', '${exam.subjectName}')">
@@ -185,13 +320,32 @@ async function deleteExam(id, subjectName) {
   }
 }
 
-// Add new exam form submission
+// Add new exam form submission with room validation & clash prevention
 document.getElementById('createExamForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const submitBtn = document.getElementById('createExamBtn');
+  const roomSelect = document.getElementById('roomSelect');
+  const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+
+  if (!roomSelect.value) {
+    showAlert('Please select an Exam Room from the list.', 'danger');
+    return;
+  }
+
+  const roomId = roomSelect.value;
+  const roomName = selectedOption.getAttribute('data-name');
+  const roomCapacity = parseInt(selectedOption.getAttribute('data-capacity'), 10);
+  const studentCount = parseInt(document.getElementById('studentCount').value, 10);
+
+  // Client-side quick check
+  if (studentCount > roomCapacity) {
+    showAlert(`Room capacity exceeded! Selected room "${roomName}" only has ${roomCapacity} seats, but you entered ${studentCount} students.`, 'danger');
+    return;
+  }
+
   submitBtn.disabled = true;
-  submitBtn.innerText = 'Publishing...';
+  submitBtn.innerText = 'Validating & Publishing...';
 
   const payload = {
     subjectName: document.getElementById('subjectName').value.trim(),
@@ -202,7 +356,9 @@ document.getElementById('createExamForm').addEventListener('submit', async (e) =
     year: document.getElementById('year').value,
     section: document.getElementById('section').value,
     department: document.getElementById('department').value,
-    room: document.getElementById('room').value.trim()
+    roomId: roomId,
+    room: roomName,
+    studentCount: studentCount
   };
 
   try {
@@ -217,11 +373,11 @@ document.getElementById('createExamForm').addEventListener('submit', async (e) =
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to create exam');
+    if (!res.ok) throw new Error(data.message || 'Failed to schedule exam');
 
-    showAlert(`Exam schedule for "${payload.subjectName}" (${payload.year} - Section ${payload.section}) published successfully!`, 'success');
+    showAlert(data.message || `Exam schedule published successfully in ${roomName}!`, 'success');
 
-    // Reset subject fields
+    // Reset fields
     document.getElementById('subjectName').value = '';
     document.getElementById('subjectCode').value = '';
 

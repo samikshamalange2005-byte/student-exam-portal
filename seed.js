@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const User = require('./models/User');
 const Exam = require('./models/Exam');
+const Room = require('./models/Room');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/exam_timetable_db';
 
@@ -68,6 +69,26 @@ async function seed() {
     console.log('✓ Created demo Student 2: bob@college.edu (3rd Year, Sec B / password: student123)');
   }
 
+  // Seed sample rooms
+  const roomsData = [
+    { name: 'Hall 101', capacity: 60 },
+    { name: 'Hall 102', capacity: 50 },
+    { name: 'Main Auditorium', capacity: 250 },
+    { name: 'Computer Lab 3', capacity: 40 }
+  ];
+
+  for (const r of roomsData) {
+    const exists = await Room.findOne({ name: r.name });
+    if (!exists) {
+      await Room.create(r);
+      console.log(`✓ Created room: ${r.name} (Capacity: ${r.capacity})`);
+    }
+  }
+
+  const hall101 = await Room.findOne({ name: 'Hall 101' });
+  const hall102 = await Room.findOne({ name: 'Hall 102' });
+  const audi = await Room.findOne({ name: 'Main Auditorium' });
+
   // Check if exams already exist
   const examCount = await Exam.countDocuments();
   if (examCount === 0) {
@@ -89,7 +110,10 @@ async function seed() {
         year: '2nd Year',
         section: 'A',
         department: 'Computer Science',
-        room: 'Block A - Hall 101',
+        room: hall101 ? hall101.name : 'Hall 101',
+        roomId: hall101 ? hall101._id : null,
+        roomCapacity: hall101 ? hall101.capacity : 60,
+        studentCount: 35,
         createdBy: admin._id
       },
       {
@@ -101,7 +125,10 @@ async function seed() {
         year: '2nd Year',
         section: 'A',
         department: 'Computer Science',
-        room: 'Block A - Hall 102',
+        room: hall102 ? hall102.name : 'Hall 102',
+        roomId: hall102 ? hall102._id : null,
+        roomCapacity: hall102 ? hall102.capacity : 50,
+        studentCount: 35,
         createdBy: admin._id
       },
       {
@@ -113,37 +140,16 @@ async function seed() {
         year: '2nd Year',
         section: 'All',
         department: 'Computer Science',
-        room: 'Main Auditorium',
-        createdBy: admin._id
-      },
-      {
-        subjectName: 'Computer Networks',
-        subjectCode: 'CS301',
-        examDate: formatDate(4),
-        startTime: '10:00 AM',
-        endTime: '01:00 PM',
-        year: '3rd Year',
-        section: 'B',
-        department: 'Computer Science',
-        room: 'Block B - Hall 204',
-        createdBy: admin._id
-      },
-      {
-        subjectName: 'Compiler Design',
-        subjectCode: 'CS302',
-        examDate: formatDate(7),
-        startTime: '02:00 PM',
-        endTime: '05:00 PM',
-        year: '3rd Year',
-        section: 'B',
-        department: 'Computer Science',
-        room: 'Block B - Hall 205',
+        room: audi ? audi.name : 'Main Auditorium',
+        roomId: audi ? audi._id : null,
+        roomCapacity: audi ? audi.capacity : 250,
+        studentCount: 120,
         createdBy: admin._id
       }
     ];
 
     await Exam.insertMany(sampleExams);
-    console.log('✓ Inserted 5 sample exam schedules across 2nd & 3rd Years!');
+    console.log('✓ Inserted sample exam schedules with assigned rooms and seating capacities!');
   }
 
   console.log('Seeding completed successfully.');

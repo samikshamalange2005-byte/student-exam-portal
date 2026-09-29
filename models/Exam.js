@@ -46,6 +46,18 @@ const examSchema = new mongoose.Schema({
     trim: true,
     default: 'Examination Hall'
   },
+  roomId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Room'
+  },
+  roomCapacity: {
+    type: Number,
+    default: 50
+  },
+  studentCount: {
+    type: Number,
+    default: 30
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

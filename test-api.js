@@ -109,6 +109,12 @@ async function runTests() {
 
   // Test 5: Admin creates 3 exams
   console.log('5. Admin adding 3 exams with distinct year & section assignments...');
+  const testDay = (Math.floor(Date.now() / 1000) % 25) + 1;
+  const dayStr = String(testDay).padStart(2, '0');
+  const examDate1 = `2027-01-${dayStr}`;
+  const examDate2 = `2027-02-${dayStr}`;
+  const examDate3 = `2027-03-${dayStr}`;
+
   // Exam 1: 2nd Year, Section A
   const exam1 = await request(`${BASE_URL}/api/exams`, {
     method: 'POST',
@@ -116,13 +122,14 @@ async function runTests() {
   }, {
     subjectName: 'Data Structures and Algorithms',
     subjectCode: 'CS201',
-    examDate: '2026-10-15',
+    examDate: examDate1,
     startTime: '10:00 AM',
     endTime: '01:00 PM',
     year: '2nd Year',
     section: 'A',
     department: 'Computer Science',
-    room: 'Hall 101'
+    room: 'Hall 101',
+    studentCount: 25
   });
   console.log('Created Exam 1 (2nd Year, Sec A):', exam1.status);
 
@@ -133,13 +140,14 @@ async function runTests() {
   }, {
     subjectName: 'Operating Systems & Concurrency',
     subjectCode: 'CS301',
-    examDate: '2026-10-16',
+    examDate: examDate2,
     startTime: '02:00 PM',
     endTime: '05:00 PM',
     year: '3rd Year',
     section: 'B',
     department: 'Computer Science',
-    room: 'Hall 204'
+    room: 'Hall 102',
+    studentCount: 30
   });
   console.log('Created Exam 2 (3rd Year, Sec B):', exam2.status);
 
@@ -150,13 +158,14 @@ async function runTests() {
   }, {
     subjectName: 'Engineering Mathematics II',
     subjectCode: 'MA201',
-    examDate: '2026-10-18',
+    examDate: examDate3,
     startTime: '10:00 AM',
     endTime: '01:00 PM',
     year: '2nd Year',
     section: 'All',
     department: 'Computer Science',
-    room: 'Auditorium'
+    room: 'Main Auditorium',
+    studentCount: 50
   });
   console.log('Created Exam 3 (2nd Year, All Sections):', exam3.status);
   console.log('✓ All 3 exams scheduled by Admin!\n');

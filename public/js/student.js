@@ -114,7 +114,7 @@ async function loadMyExams() {
 
           <div class="exam-info-row">
             <span class="exam-info-icon">📍</span>
-            <span>Room: <strong>${exam.room || 'Main Hall'}</strong></span>
+            <span>Assigned Room: <strong>${exam.room || 'Main Hall'}</strong> ${exam.roomCapacity ? `<span style="font-size: 0.8rem; color: var(--text-muted);">(${exam.roomCapacity} seats)</span>` : ''}</span>
           </div>
 
           <div class="exam-card-footer">
