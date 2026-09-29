@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - My Exam Timetable</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <a href="/" class="brand">
+      <div class="brand-icon">🎓</div>
+      <span>Apex Student Portal</span>
+    </a>
+    <div class="nav-links" id="navUserArea">
+      <!-- Populated by JS -->
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Print Specific Header -->
+    <div class="print-header">
+      <h2>Apex College of Engineering & Technology</h2>
+      <h3>Official Examination Timetable & Admit Card</h3>
+      <p id="printStudentInfo">Student: - | Roll No: - | Class: -</p>
+    </div>
+
+    <!-- Student Profile Header Banner -->
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h1 id="welcomeGreeting">Welcome, Student</h1>
+        <p id="classBadgeText">Showing timetable for your enrolled academic class</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="loadMyExams()">
+          🔄 Refresh
+        </button>
+        <button class="btn btn-primary" onclick="window.print()">
+          🖨️ Print Timetable
+        </button>
+      </div>
+    </div>
+
+    <!-- Class Verification Notice -->
+    <div class="notice-banner">
+      <div class="notice-icon">📌</div>
+      <div class="notice-content">
+        <h4>Class-Specific Filtering Active</h4>
+        <p id="noticeDesc">
+          You are currently viewing exams tailored specifically to your registered Year and Section.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats / Summary -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📚</div>
+        <div class="stat-details">
+          <h3>Your Total Exams</h3>
+          <div class="stat-number" id="statStudentTotal">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">🎓</div>
+        <div class="stat-details">
+          <h3>Academic Year</h3>
+          <div class="stat-number" id="statStudentYear" style="font-size: 1.25rem;">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">🏷️</div>
+        <div class="stat-details">
+          <h3>Class Section</h3>
+          <div class="stat-number" id="statStudentSection" style="font-size: 1.25rem;">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">🏛️</div>
+        <div class="stat-details">
+          <h3>Department</h3>
+          <div class="stat-number" id="statStudentDept" style="font-size: 1.1rem;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timetable Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📅</span> Examination Schedule
+        </div>
+        <div id="timetableCountBadge" class="badge badge-blue">
+          0 Exams Scheduled
+        </div>
+      </div>
+
+      <!-- Timetable Grid Cards -->
+      <div id="studentTimetableContainer" class="timetable-grid">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          Loading your exam schedule...
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Apex College Examination Cell. All rights reserved.</p>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/student.js"></script>
+</body>
+</html>

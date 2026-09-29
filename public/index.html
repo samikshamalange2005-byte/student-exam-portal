@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Exam Timetable Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <a href="/" class="brand">
+      <div class="brand-icon">🎓</div>
+      <span>Apex College Exams</span>
+    </a>
+    <div class="nav-links" id="navUserArea">
+      <a href="/login.html" class="btn btn-secondary btn-sm">Login</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">Register</a>
+    </div>
+  </header>
+
+  <!-- Hero & Landing -->
+  <main class="container">
+    <div class="hero">
+      <h1>College Examination Timetable Portal</h1>
+      <p>Secure, role-based exam scheduling and timetable access. Administrators manage and publish schedules, while students access their class-specific exam dates and venues.</p>
+    </div>
+
+    <!-- Role Portals Grid -->
+    <div class="portal-grid">
+      <!-- Admin Card -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <div class="portal-icon icon-admin">🏛️</div>
+          <div>
+            <h2>Admin Portal</h2>
+            <span class="badge badge-amber">Faculty & Exam Cell</span>
+          </div>
+        </div>
+        <p>Manage the college exam master schedule. Add new examinations by course, year, and section, view all scheduled papers, and maintain the timetable.</p>
+        <ul class="portal-features">
+          <li>Create & publish new exam schedules</li>
+          <li>Assign date, time, year, section & exam hall</li>
+          <li>Comprehensive master timetable view</li>
+          <li>Delete or modify upcoming exams</li>
+        </ul>
+        <div class="portal-actions">
+          <a href="/login.html?role=admin" class="btn btn-primary">Admin Login</a>
+          <a href="/register.html?role=admin" class="btn btn-secondary">Admin Sign Up</a>
+        </div>
+      </div>
+
+      <!-- Student Card -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <div class="portal-icon icon-student">🎒</div>
+          <div>
+            <h2>Student Portal</h2>
+            <span class="badge badge-blue">Class Specific View</span>
+          </div>
+        </div>
+        <p>Access your personalized examination timetable. Students only see upcoming exam dates, subjects, timings, and halls specifically matching their enrolled Year and Section.</p>
+        <ul class="portal-features">
+          <li>Personalized class timetable (Year & Section)</li>
+          <li>Detailed subject name & code mapping</li>
+          <li>Exam venue and hall room allocation</li>
+          <li>Print-friendly exam schedule slip</li>
+        </ul>
+        <div class="portal-actions">
+          <a href="/login.html?role=student" class="btn btn-primary">Student Login</a>
+          <a href="/register.html?role=student" class="btn btn-secondary">Student Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Apex College of Engineering & Technology. Examination Cell Portal.</p>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavUser();
+    });
+  </script>
+</body>
+</html>

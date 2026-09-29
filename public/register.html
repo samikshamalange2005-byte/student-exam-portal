@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - College Exam Timetable Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <a href="/" class="brand">
+      <div class="brand-icon">🎓</div>
+      <span>Apex College Exams</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="btn btn-secondary btn-sm">Home</a>
+      <a href="/login.html" class="btn btn-secondary btn-sm">Login</a>
+    </div>
+  </header>
+
+  <!-- Register Form Container -->
+  <main class="container">
+    <div class="auth-wrapper" style="max-width: 540px;">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 id="regTitle">Student Registration</h1>
+          <p id="regSubtitle">Create your account to view your class exam timetable</p>
+        </div>
+
+        <!-- Role Switcher Tabs -->
+        <div class="role-tabs">
+          <button type="button" class="role-tab active" id="tabStudent" onclick="switchRole('student')">
+            🎒 Student Registration
+          </button>
+          <button type="button" class="role-tab" id="tabAdmin" onclick="switchRole('admin')">
+            🏛️ Admin Registration
+          </button>
+        </div>
+
+        <!-- Feedback Alert -->
+        <div id="alertBox" class="alert" style="display: none;"></div>
+
+        <!-- Registration Form -->
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              class="form-control" 
+              placeholder="e.g. John Doe" 
+              required
+            >
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input 
+                type="email" 
+                id="email" 
+                class="form-control" 
+                placeholder="john@college.edu" 
+                required
+              >
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input 
+                type="password" 
+                id="password" 
+                class="form-control" 
+                placeholder="At least 6 chars" 
+                minlength="6"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Student-specific fields -->
+          <div id="studentFields">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="rollNo">Roll Number / Student ID</label>
+                <input 
+                  type="text" 
+                  id="rollNo" 
+                  class="form-control" 
+                  placeholder="e.g. 24CS101"
+                >
+              </div>
+              <div class="form-group">
+                <label for="department">Department</label>
+                <select id="department" class="form-control">
+                  <option value="Computer Science">Computer Science & Eng</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics & Communication">Electronics & Comm</option>
+                  <option value="Mechanical Engineering">Mechanical Eng</option>
+                  <option value="Civil Engineering">Civil Eng</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="year">Enrolled Year <span style="color: var(--danger)">*</span></label>
+                <select id="year" class="form-control">
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+                <div class="form-hint">Used to filter your exams</div>
+              </div>
+              <div class="form-group">
+                <label for="section">Class Section <span style="color: var(--danger)">*</span></label>
+                <select id="section" class="form-control">
+                  <option value="A">Section A</option>
+                  <option value="B">Section B</option>
+                  <option value="C">Section C</option>
+                </select>
+                <div class="form-hint">Used to filter your exams</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin-specific fields -->
+          <div id="adminFields" style="display: none;">
+            <div class="form-group">
+              <label for="adminSecret">Admin Security Key <span style="color: var(--danger)">*</span></label>
+              <input 
+                type="password" 
+                id="adminSecret" 
+                class="form-control" 
+                placeholder="Enter college admin authorization key"
+              >
+              <div class="form-hint">Default development key: <code>ADMIN2026</code></div>
+            </div>
+
+            <div class="form-group">
+              <label for="adminDepartment">Department / Office</label>
+              <input 
+                type="text" 
+                id="adminDepartment" 
+                class="form-control" 
+                value="Examination Controller Office"
+              >
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            Create Account
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+          Already have an account? 
+          <a href="/login.html" id="loginLink" style="font-weight: 600;">Sign in here</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Apex College of Engineering & Technology.</p>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    let currentRole = 'student';
+
+    function switchRole(role) {
+      currentRole = role;
+      const tabStudent = document.getElementById('tabStudent');
+      const tabAdmin = document.getElementById('tabAdmin');
+      const title = document.getElementById('regTitle');
+      const subtitle = document.getElementById('regSubtitle');
+      const studentFields = document.getElementById('studentFields');
+      const adminFields = document.getElementById('adminFields');
+      const loginLink = document.getElementById('loginLink');
+
+      if (role === 'admin') {
+        tabAdmin.classList.add('active');
+        tabStudent.classList.remove('active');
+        title.innerText = 'Admin Registration';
+        subtitle.innerText = 'Create an exam management faculty account';
+        studentFields.style.display = 'none';
+        adminFields.style.display = 'block';
+        loginLink.href = '/login.html?role=admin';
+      } else {
+        tabStudent.classList.add('active');
+        tabAdmin.classList.remove('active');
+        title.innerText = 'Student Registration';
+        subtitle.innerText = 'Create your account to view your class exam timetable';
+        studentFields.style.display = 'block';
+        adminFields.style.display = 'none';
+        loginLink.href = '/login.html?role=student';
+      }
+      hideAlert();
+    }
+
+    function showAlert(message, type = 'danger') {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerText = message;
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.style.display = 'none';
+    }
+
+    // Initialize role based on URL query
+    document.addEventListener('DOMContentLoaded', () => {
+      redirectIfLoggedIn();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roleParam = urlParams.get('role');
+      if (roleParam === 'admin') {
+        switchRole('admin');
+      } else {
+        switchRole('student');
+      }
+    });
+
+    // Form Submission
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submitBtn');
+
+      let payload = {
+        name,
+        email,
+        password,
+        role: currentRole
+      };
+
+      if (currentRole === 'student') {
+        payload.rollNo = document.getElementById('rollNo').value.trim();
+        payload.department = document.getElementById('department').value;
+        payload.year = document.getElementById('year').value;
+        payload.section = document.getElementById('section').value;
+      } else {
+        payload.adminSecret = document.getElementById('adminSecret').value.trim();
+        payload.department = document.getElementById('adminDepartment').value.trim();
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating account...';
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed.');
+        }
+
+        // Auto login on successful registration
+        setAuth(data.token, data.user);
+
+        showAlert('Account created successfully! Redirecting...', 'success');
+
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            window.location.href = '/admin-dashboard.html';
+          } else {
+            window.location.href = '/student-dashboard.html';
+          }
+        }, 800);
+
+      } catch (err) {
+        showAlert(err.message, 'danger');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

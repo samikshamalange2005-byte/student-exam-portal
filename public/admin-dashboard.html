@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Exam Timetable Management</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <a href="/" class="brand">
+      <div class="brand-icon">🏛️</div>
+      <span>Admin Exam Cell</span>
+    </a>
+    <div class="nav-links" id="navUserArea">
+      <!-- Populated by JS -->
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h1>Master Exam Timetable Management</h1>
+        <p>Schedule college examinations and publish class-specific timetables</p>
+      </div>
+      <div>
+        <a href="#addExamSection" class="btn btn-primary">
+          <span>➕</span> Schedule New Exam
+        </a>
+      </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="dashboardAlert" class="alert" style="display: none;"></div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📝</div>
+        <div class="stat-details">
+          <h3>Total Scheduled</h3>
+          <div class="stat-number" id="statTotalExams">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">👥</div>
+        <div class="stat-details">
+          <h3>Enrolled Students</h3>
+          <div class="stat-number" id="statTotalStudents">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">🏢</div>
+        <div class="stat-details">
+          <h3>Departments</h3>
+          <div class="stat-number" id="statDepartments">-</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">⏳</div>
+        <div class="stat-details">
+          <h3>Upcoming Papers</h3>
+          <div class="stat-number" id="statUpcoming">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Exam Form Panel -->
+    <div class="panel" id="addExamSection">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📅</span> Schedule New Examination
+        </div>
+      </div>
+
+      <form id="createExamForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="subjectName">Subject Name <span style="color: var(--danger)">*</span></label>
+            <input 
+              type="text" 
+              id="subjectName" 
+              class="form-control" 
+              placeholder="e.g. Data Structures & Algorithms" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="subjectCode">Subject Code <span style="color: var(--danger)">*</span></label>
+            <input 
+              type="text" 
+              id="subjectCode" 
+              class="form-control" 
+              placeholder="e.g. CS201" 
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="examDate">Exam Date <span style="color: var(--danger)">*</span></label>
+            <input 
+              type="date" 
+              id="examDate" 
+              class="form-control" 
+              required
+            >
+          </div>
+          <div class="form-group">
+            <div class="form-row">
+              <div>
+                <label for="startTime">Start Time <span style="color: var(--danger)">*</span></label>
+                <input 
+                  type="text" 
+                  id="startTime" 
+                  class="form-control" 
+                  placeholder="e.g. 10:00 AM" 
+                  value="10:00 AM"
+                  required
+                >
+              </div>
+              <div>
+                <label for="endTime">End Time <span style="color: var(--danger)">*</span></label>
+                <input 
+                  type="text" 
+                  id="endTime" 
+                  class="form-control" 
+                  placeholder="e.g. 01:00 PM" 
+                  value="01:00 PM"
+                  required
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="year">Target Academic Year <span style="color: var(--danger)">*</span></label>
+            <select id="year" class="form-control" required>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="section">Target Class Section <span style="color: var(--danger)">*</span></label>
+            <select id="section" class="form-control" required>
+              <option value="All">All Sections (A, B, C)</option>
+              <option value="A">Section A Only</option>
+              <option value="B">Section B Only</option>
+              <option value="C">Section C Only</option>
+            </select>
+            <div class="form-hint">Students of this section will see this exam</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department</label>
+            <select id="department" class="form-control">
+              <option value="Computer Science">Computer Science & Engineering</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Electronics & Communication">Electronics & Communication</option>
+              <option value="Mechanical Engineering">Mechanical Engineering</option>
+              <option value="Civil Engineering">Civil Engineering</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="room">Exam Hall / Room</label>
+            <input 
+              type="text" 
+              id="room" 
+              class="form-control" 
+              placeholder="e.g. Academic Block Hall 302"
+              value="Main Exam Hall"
+            >
+          </div>
+        </div>
+
+        <button type="submit" id="createExamBtn" class="btn btn-primary" style="margin-top: 0.5rem;">
+          Publish Exam Schedule
+        </button>
+      </form>
+    </div>
+
+    <!-- Master Timetable List Panel -->
+    <div class="panel">
+      <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div class="panel-title">
+          <span>📋</span> All Scheduled Examinations
+        </div>
+        <!-- Filters -->
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <select id="filterYear" class="form-control" style="width: auto; padding: 0.4rem 0.75rem;" onchange="applyFilters()">
+            <option value="">All Years</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+          <select id="filterSection" class="form-control" style="width: auto; padding: 0.4rem 0.75rem;" onchange="applyFilters()">
+            <option value="">All Sections</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+            <option value="All">All Sections</option>
+          </select>
+          <input 
+            type="text" 
+            id="searchQuery" 
+            class="form-control" 
+            placeholder="Search subject or code..." 
+            style="width: 220px; padding: 0.4rem 0.75rem;"
+            oninput="applyFilters()"
+          >
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Date & Day</th>
+              <th>Time</th>
+              <th>Subject & Code</th>
+              <th>Year</th>
+              <th>Section</th>
+              <th>Venue / Room</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="examsTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem;">Loading exam records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Apex College Examination Cell. All rights reserved.</p>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
