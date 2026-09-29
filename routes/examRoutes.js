@@ -41,18 +41,18 @@ router.get('/', verifyToken, async (req, res) => {
       const targetDept = req.query.department || '';
 
       if (targetYear && targetYear !== 'All') {
-        query.year = targetYear;
+        query.year = { $regex: new RegExp(`^${targetYear.trim()}$`, 'i') };
       }
 
       if (targetSection && targetSection !== 'All') {
         query.$or = [
-          { section: targetSection },
+          { section: { $regex: new RegExp(`^${targetSection.trim()}$`, 'i') } },
           { section: 'All' }
         ];
       }
 
       if (targetDept && targetDept !== 'All' && targetDept !== 'All Departments') {
-        query.department = targetDept;
+        query.department = { $regex: new RegExp(`^${targetDept.trim()}`, 'i') };
       }
     } else if (req.user.role === 'admin') {
       // Optional query filters for admin

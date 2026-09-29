@@ -899,6 +899,15 @@ select.form-control {
   color: var(--slate-900);
 }
 
+.stat-subtext {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 /* Capacity Progress Bar */
 .capacity-container {
   display: flex;

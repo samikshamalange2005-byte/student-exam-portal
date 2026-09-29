@@ -60,10 +60,14 @@ function showToast(title, message, icon = '🔔') {
 function isExamRelevant(exam) {
   if (!exam || !currentUser) return { enrolledMatch: false, filterMatch: false };
 
+  const norm = (str) => (str || '').trim().toLowerCase();
+
   // 1. Matches student's enrolled academic profile
-  const enrolledYear = exam.year === currentUser.year;
-  const enrolledSec = exam.section === currentUser.section || exam.section === 'All';
-  const enrolledDept = !exam.department || !currentUser.department || exam.department === currentUser.department;
+  const enrolledYear = norm(exam.year) === norm(currentUser.year);
+  const enrolledSec = norm(exam.section) === norm(currentUser.section) || norm(exam.section) === 'all';
+  const enrolledDept = !exam.department || !currentUser.department || 
+    norm(exam.department).includes(norm(currentUser.department)) || 
+    norm(currentUser.department).includes(norm(exam.department));
   const enrolledMatch = enrolledYear && enrolledSec && enrolledDept;
 
   // 2. Matches current dropdown filter selections on screen
@@ -71,9 +75,11 @@ function isExamRelevant(exam) {
   const curYear = document.getElementById('studentFilterYear') ? document.getElementById('studentFilterYear').value : '';
   const curSec = document.getElementById('studentFilterSection') ? document.getElementById('studentFilterSection').value : '';
 
-  const filterYearMatch = !curYear || curYear === exam.year;
-  const filterSecMatch = !curSec || curSec === 'All' || curSec === exam.section || exam.section === 'All';
-  const filterDeptMatch = !curDept || curDept === 'All Departments' || curDept === exam.department;
+  const filterYearMatch = !curYear || curYear === 'All' || norm(curYear) === norm(exam.year);
+  const filterSecMatch = !curSec || curSec === 'All' || norm(curSec) === norm(exam.section) || norm(exam.section) === 'all';
+  const filterDeptMatch = !curDept || curDept === 'All' || curDept === 'All Departments' || 
+    norm(curDept).includes(norm(exam.department)) || 
+    norm(exam.department).includes(norm(curDept));
   const filterMatch = filterYearMatch && filterSecMatch && filterDeptMatch;
 
   return { enrolledMatch, filterMatch };
@@ -194,14 +200,9 @@ function setupLiveEventSource() {
 function displayStudentProfile(user) {
   const greeting = document.getElementById('welcomeGreeting');
   const classBadgeText = document.getElementById('classBadgeText');
-  const noticeDesc = document.getElementById('noticeDesc');
 
   greeting.innerText = `Welcome, ${user.name}!`;
   classBadgeText.innerText = `Enrolled in ${user.year} • Section ${user.section} • ${user.department || 'Computer Science'} • Roll No: ${user.rollNo || 'N/A'}`;
-  
-  document.getElementById('statStudentYear').innerText = user.year;
-  document.getElementById('statStudentSection').innerText = `Section ${user.section}`;
-  document.getElementById('statStudentDept').innerText = user.department || 'Computer Science';
 
   // Pre-select student's own branch, year, and section in the filter controls
   const deptSelect = document.getElementById('studentFilterDept');
@@ -212,12 +213,71 @@ function displayStudentProfile(user) {
   if (yearSelect && user.year) yearSelect.value = user.year;
   if (secSelect && user.section) secSelect.value = user.section;
 
+  updateFilterStats();
+}
+
+// Dynamically updates Academic Year, Class Section, and Department stat cards and banner based on active filter
+function updateFilterStats() {
+  if (!currentUser) return;
+
+  const deptEl = document.getElementById('studentFilterDept');
+  const yearEl = document.getElementById('studentFilterYear');
+  const secEl = document.getElementById('studentFilterSection');
+
+  const curDept = deptEl ? deptEl.value : (currentUser.department || 'Computer Science');
+  const curYear = yearEl ? yearEl.value : (currentUser.year || '1st Year');
+  const curSec = secEl ? secEl.value : (currentUser.section || 'A');
+
+  const norm = (str) => (str || '').trim().toLowerCase();
+
+  // Check if current filter matches student's enrolled class
+  const isEnrolledYear = norm(curYear) === norm(currentUser.year);
+  const isEnrolledSec = norm(curSec) === norm(currentUser.section);
+  const isEnrolledDept = norm(curDept) === norm(currentUser.department) || (curDept === 'All Departments' && norm(currentUser.department) === 'computer science');
+
+  // Update Year card
+  const statYear = document.getElementById('statStudentYear');
+  const statYearSub = document.getElementById('statYearSubtext');
+  if (statYear) {
+    statYear.innerText = curYear === 'All' ? 'All Years' : curYear;
+  }
+  if (statYearSub) {
+    statYearSub.innerHTML = isEnrolledYear 
+      ? '<span style="color: var(--success); font-weight: 600;">✓ Enrolled Year</span>' 
+      : '<span style="color: var(--primary); font-weight: 600;">🔍 Filtered View</span>';
+  }
+
+  // Update Section card
+  const statSec = document.getElementById('statStudentSection');
+  const statSecSub = document.getElementById('statSectionSubtext');
+  if (statSec) {
+    statSec.innerText = curSec === 'All' ? 'All Sections' : `Section ${curSec}`;
+  }
+  if (statSecSub) {
+    statSecSub.innerHTML = isEnrolledSec 
+      ? '<span style="color: var(--success); font-weight: 600;">✓ Enrolled Section</span>' 
+      : '<span style="color: var(--primary); font-weight: 600;">🔍 Filtered View</span>';
+  }
+
+  // Update Department card
+  const statDept = document.getElementById('statStudentDept');
+  const statDeptSub = document.getElementById('statDeptSubtext');
+  if (statDept) {
+    statDept.innerText = curDept === 'All Departments' ? 'All Branches' : curDept;
+  }
+  if (statDeptSub) {
+    statDeptSub.innerHTML = (norm(curDept) === norm(currentUser.department)) 
+      ? '<span style="color: var(--success); font-weight: 600;">✓ Enrolled Branch</span>' 
+      : '<span style="color: var(--primary); font-weight: 600;">🔍 Filtered View</span>';
+  }
+
+  // Update Notice Banner
   updateNoticeBanner();
 
-  // For print header
+  // Update Print Header
   const printInfo = document.getElementById('printStudentInfo');
   if (printInfo) {
-    printInfo.innerText = `Candidate: ${user.name} | Roll No: ${user.rollNo || 'N/A'} | Class: ${user.year} - Section ${user.section} | Dept: ${user.department || 'CS'}`;
+    printInfo.innerText = `Candidate: ${currentUser.name} | Roll No: ${currentUser.rollNo || 'N/A'} | Filter: ${curDept} • ${curYear} • Section ${curSec}`;
   }
 }
 
@@ -238,7 +298,7 @@ function updateNoticeBanner() {
 }
 
 function onStudentFilterChange() {
-  updateNoticeBanner();
+  updateFilterStats();
   loadMyExams();
 }
 
@@ -252,7 +312,7 @@ function resetToMyClass() {
   if (yearSelect) yearSelect.value = currentUser.year || '1st Year';
   if (secSelect) secSelect.value = currentUser.section || 'A';
 
-  updateNoticeBanner();
+  updateFilterStats();
   loadMyExams();
 }
 
@@ -345,6 +405,8 @@ async function loadMyExams(highlightId = null, highlightType = 'new') {
     const exams = data.exams || [];
     totalCountEl.innerText = exams.length;
     badgeCountEl.innerText = `${exams.length} ${exams.length === 1 ? 'Exam' : 'Exams'} Scheduled`;
+
+    updateFilterStats();
 
     // Find next upcoming exam for spotlight
     const todayStr = new Date().toISOString().split('T')[0];
